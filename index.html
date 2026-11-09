@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>레이저 메이즈 — 암호를 찾아라</title>
+<style>
+:root{--bg:#0d1626;--card:#16233a;--card2:#1d2e4a;--ink:#eaf1ff;--mut:#9fb2d0;--acc:#ff4a4a;--ok:#33d17a;--warn:#ffb300}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:Pretendard,"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  min-height:100dvh;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+header{max-width:1100px;margin:0 auto;padding:10px 14px 0;display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}
+h1{font-size:20px;margin:0;letter-spacing:-.3px}
+h1 small{font-weight:500;color:var(--mut);font-size:13px;margin-left:6px}
+.tabs{display:flex;gap:6px;margin-left:auto}
+.tab{border:0;border-radius:999px;padding:8px 14px;background:var(--card2);color:var(--ink);font:700 14px/1 inherit;cursor:pointer}
+.tab.on{background:var(--acc);color:#fff}
+.tab.done::after{content:" ✓";color:#7dffb0}
+.tab.on.done::after{color:#fff}
+.layout{max-width:1100px;margin:0 auto;padding:10px 14px 24px;display:grid;gap:12px;grid-template-columns:minmax(0,1fr)}
+.ctrl{grid-area:ctrl}.stage{grid-area:stage}.help{grid-area:help}
+.layout{grid-template-areas:"stage" "ctrl" "help"}
+@media (min-width:860px){
+  .layout{grid-template-columns:minmax(0,1.15fr) minmax(300px,.85fr);grid-template-areas:"stage ctrl" "stage help";grid-template-rows:auto 1fr;align-items:start}
+}
+.card{background:var(--card);border-radius:16px;padding:12px 14px}
+.goal{font-size:15px;font-weight:700;margin:0 0 8px}
+.goal span{color:var(--acc)}
+.btns{display:flex;gap:8px;margin-bottom:8px}
+.btn{flex:1;border:0;border-radius:12px;padding:13px 10px;font:800 16px/1 inherit;color:#fff;background:var(--acc);cursor:pointer;box-shadow:0 3px 0 rgba(0,0,0,.35)}
+.btn:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(0,0,0,.35)}
+.btn.off{background:#3b4d6d}
+.btn.sub{flex:0 0 auto;background:var(--card2);font-size:14px;font-weight:700;padding:13px 14px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}
+.chip{background:var(--card2);border-radius:999px;padding:6px 11px;font-size:13px;font-weight:700;color:var(--mut)}
+.chip.ok{background:#16452f;color:#7dffb0}
+.msg{font-size:14px;color:var(--mut);min-height:20px;margin:2px 0 8px}
+.msg.bad{color:#ffd48a}
+.code{display:flex;align-items:center;gap:10px;background:#0a1220;border-radius:12px;padding:8px 12px}
+.code b{font:800 30px/1 ui-monospace,Menlo,Consolas,monospace;letter-spacing:6px;color:#5b6b88}
+.code.got b{color:#7dffb0}
+.code .f{font-size:12px;color:var(--mut);word-break:keep-all}
+.secret{font-size:12px;color:#ffb3b3;margin:8px 0 0}
+.stage{position:relative}
+svg#board{display:block;width:100%;height:auto;max-height:calc(100dvh - 150px);margin:0 auto;touch-action:pan-y;user-select:none;-webkit-user-select:none}
+.tok{touch-action:none;cursor:grab;transition:transform .22s cubic-bezier(.3,1.35,.5,1)}
+.tok.dragging{transition:none;cursor:grabbing;filter:drop-shadow(0 10px 8px rgba(0,0,0,.55))}
+.tok.sel{filter:drop-shadow(0 0 9px #fff)}
+.tok.fixedtok{cursor:default}
+.rotor{transform-box:fill-box;transform-origin:50% 50%;transition:transform .22s cubic-bezier(.3,1.35,.5,1)}
+.tok.miss .body{stroke:#ffb300;stroke-width:5;stroke-dasharray:9 6}
+.halo{opacity:0}
+.tok.lit .halo{opacity:.95;animation:pulse .9s ease-in-out infinite alternate}
+@keyframes pulse{from{r:14;opacity:.55}to{r:22;opacity:1}}
+.cell.hint{stroke:#fff;stroke-width:3;stroke-dasharray:8 6}
+.beam{pointer-events:none}
+.beam line{stroke-linecap:round}
+.beam .g{stroke:rgba(255,50,50,.35);stroke-width:20}
+.beam .c{stroke:#ff3030;stroke-width:7}
+.beam .w{stroke:#ffd9d9;stroke-width:2.5}
+.beam.anim line{stroke-dasharray:var(--len);stroke-dashoffset:var(--len);animation:draw .22s linear forwards;animation-delay:var(--dl)}
+@keyframes draw{to{stroke-dashoffset:0}}
+.help details{background:var(--card);border-radius:16px;padding:10px 14px}
+.help summary{font-weight:700;cursor:pointer;font-size:14px}
+.legend{display:grid;gap:8px;margin-top:10px}
+.lg{display:flex;gap:10px;align-items:center;font-size:13px;line-height:1.4}
+.lg svg{flex:0 0 44px;width:44px;height:44px}
+.lg b{display:block}
+.rules{margin:10px 0 0;padding-left:18px;font-size:13px;line-height:1.55;color:var(--mut)}
+.overlay{position:fixed;inset:0;background:rgba(5,10,20,.78);display:none;align-items:center;justify-content:center;z-index:10;padding:16px}
+.overlay.on{display:flex}
+.win{background:var(--card);border-radius:22px;padding:22px 22px 18px;text-align:center;max-width:420px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.6);animation:pop .35s cubic-bezier(.3,1.5,.5,1)}
+@keyframes pop{from{transform:scale(.7);opacity:0}to{transform:none;opacity:1}}
+.win h2{margin:0 0 6px;font-size:24px}
+.win .big{font:800 56px/1.1 ui-monospace,Menlo,Consolas,monospace;letter-spacing:10px;color:#7dffb0;margin:8px 0 4px}
+.win .sum{font-size:14px;color:var(--mut);margin-bottom:10px;word-break:keep-all}
+.win .warn{font-size:14px;color:#ffb3b3;margin-bottom:12px}
+.win .row{display:flex;gap:8px}
+#wrap3d{position:relative;width:100%;height:min(80dvh,148vw);min-height:360px;border-radius:18px;overflow:hidden;background:#0f1a2c}
+#gl{position:absolute;inset:0;width:100%;height:100%;touch-action:none;display:block}
+#ov{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.ob .top,.ob .num{position:absolute;left:0;top:0;will-change:transform}
+.ob .top{display:flex;gap:3px}
+.ob i{font-style:normal;width:21px;height:21px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;box-shadow:0 1px 4px #0008}
+.ob i.r{background:#fff;color:#333}
+.ob i.m{background:#e53935;color:#fff;border:2px solid #fff;font-size:11px}
+.ob i.x{background:#ffb300;color:#000}
+.ob .num{background:rgba(10,18,30,.8);color:#fff;font-weight:800;font-size:12px;min-width:20px;padding:1px 6px;border-radius:9px;text-align:center}
+.vbar{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap}
+.vb{border:0;border-radius:10px;padding:9px 12px;background:var(--card2);color:var(--ink);font:700 13px/1 inherit;cursor:pointer}
+.vb:active{transform:translateY(1px)}
+.hide{display:none!important}
+#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);background:#000c;color:#fff;border-radius:999px;padding:10px 16px;font-size:14px;opacity:0;pointer-events:none;transition:.25s;z-index:20;white-space:nowrap}
+#toast.on{opacity:1;transform:translateX(-50%)}
+</style>
+</head>
+<body>
+<header>
+  <h1>🔦 레이저 메이즈<small>암호를 찾아라</small></h1>
+  <div class="tabs" id="tabs"></div>
+</header>
+
+<div class="layout">
+  <section class="ctrl card">
+    <p class="goal" id="goal"></p>
+    <div class="btns">
+      <button class="btn" id="fire">🔦 레이저 발사</button>
+      <button class="btn sub" id="reset">↺ 처음부터</button>
+    </div>
+    <div class="chips" id="chips"></div>
+    <div class="msg" id="msg"></div>
+    <div class="code" id="code"><b id="codeNum">????</b><span class="f" id="codeF">성공하면 암호가 나타나요</span></div>
+    <p class="secret" id="secret" hidden>🤫 암호는 다른 모둠에게 절대 알려주지 않기!</p>
+  </section>
+
+  <section class="stage">
+    <div class="vbar"><button class="vb" id="vMode">🗺 2D로 보기</button><button class="vb" id="vCam">🎥 시점: 기본</button></div>
+    <div id="wrap3d"><canvas id="gl"></canvas><div id="ov"></div></div>
+    <svg id="board" class="hide" viewBox="0 0 560 745" role="img" aria-label="레이저 메이즈 격자"></svg>
+  </section>
+
+  <section class="help">
+    <details>
+      <summary>📖 토큰 설명 · 게임 방법</summary>
+      <div class="legend" id="legend"></div>
+      <ol class="rules">
+        <li><b>3D 화면</b>: 빈 곳을 끌면 시점이 돌아가고, 마우스 휠·두 손가락으로 확대/축소해요. <b>시점</b> 버튼으로 위에서 내려다볼 수도 있어요.</li>
+        <li>아래 <b>추가할 토큰</b>을 격자의 빈 칸에 놓으세요. (끌어다 놓거나, 토큰을 탭한 뒤 빈 칸을 탭)</li>
+        <li>격자 위 토큰을 <b>탭하면 90° 회전</b>해요. <span style="color:#ffd48a">↻</span> 표시가 있는 토큰만 돌릴 수 있어요.</li>
+        <li>레이저가 <b>모든 토큰</b>(셀 차단기 제외)을 한 번 이상 지나고, 타겟 <b>개수</b>만큼 빔이 닿으면 성공!</li>
+        <li><b>암호</b> = 토큰이 놓인 칸의 번호를 모두 더한 값 (4자리)</li>
+        <li>빨간 ◎ 표시가 있는 토큰은 타겟(빨간 점)으로 빔이 닿아야 해요.</li>
+      </ol>
+    </details>
+  </section>
+</div>
+
+<div class="overlay" id="winOv">
+  <div class="win">
+    <h2>🎉 미션 성공!</h2>
+    <div>암호는</div>
+    <div class="big" id="winCode">0000</div>
+    <div class="sum" id="winSum"></div>
+    <div class="warn" id="winWarn" hidden>🤫 다른 모둠에게는 비밀!</div>
+    <div class="row">
+      <button class="btn sub" id="winClose" style="flex:1">화면 보기</button>
+      <button class="btn" id="winNext" style="flex:1">다음 문제 ▶</button>
+    </div>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script id="core">
+/* ===== 레이저 메이즈 코어 (DOM 없음) =====
+ * 방향: 0=위 1=오른쪽 2=아래 3=왼쪽,  칸 번호: 1~25 (왼쪽 위부터 가로로)
+ * 토큰: L 레이저 / T 타겟·거울 / S 빔 스플리터 / M 양면 거울 / K 체크포인트 / B 셀 차단기
+ * 방향값 o (회전 횟수, 계속 증가해도 됨)
+ *   L: o%4 = 빔이 나가는 방향
+ *   T: k=o%4 → 거울면은 (k, k+1) 두 변, 타겟은 (k+2) 변, (k+3) 변은 빔을 막는 뒷면
+ *   M,S: o%2==0 이면 '\', 1이면 '/'
+ *   K: o%2==0 이면 가로로 통과, 1이면 세로로 통과 (옆면은 막음)
+ */
+const DX = [0, 1, 0, -1], DY = [-1, 0, 1, 0];
+const REF = [[3, 2, 1, 0], [1, 0, 3, 2]];   // 0:'\'  1:'/'
+
+/* 문제 데이터
+ *  fixed: 처음부터 놓여 있는 토큰. free:true 면 위치는 고정, 방향은 직접 찾기(카드의 '?')
+ *         must:true 면 카드에 빨간 표시(타겟으로 쓰이는 토큰)
+ *  add:   추가로 놓아야 하는 토큰 (o 는 처음 방향)
+ */
+const PUZZLES = [
+  { id: 'p1', name: '연습 1', targets: 1,
+    fixed: [ { t: 'L', cell: 7, o: 2 }, { t: 'T', cell: 19, o: 1 } ],
+    add: [ { t: 'M', o: 1 } ] },
+  { id: 'p2', name: '연습 2', targets: 2,
+    fixed: [ { t: 'L', cell: 3, o: 0, free: true }, { t: 'M', cell: 5, o: 0 },
+             { t: 'T', cell: 11, o: 3 }, { t: 'T', cell: 16, o: 0, free: true, must: true },
+             { t: 'T', cell: 20, o: 0, free: true } ],
+    add: [ { t: 'S', o: 0 } ] },
+  { id: 'p3', name: '메인 미션', targets: 3, secret: true,
+    fixed: [ { t: 'T', cell: 4, o: 2, free: true, must: true }, { t: 'T', cell: 6, o: 3 },
+             { t: 'B', cell: 10, o: 0 }, { t: 'K', cell: 12, o: 1, free: true },
+             { t: 'T', cell: 15, o: 3, free: true, must: true } ],
+    add: [ { t: 'L', o: 0 }, { t: 'S', o: 0 }, { t: 'S', o: 0 } ] }
+];
+
+function makeTokens(p) {
+  const out = []; let n = 0;
+  p.fixed.forEach(f => out.push({ id: 't' + (n++), type: f.t, cell: f.cell, o: f.o,
+    rot: !!f.free, free: !!f.free, must: !!f.must, fixedPos: true }));
+  p.add.forEach(a => out.push({ id: 't' + (n++), type: a.t, cell: null, o: a.o,
+    rot: true, free: true, must: false, fixedPos: false }));
+  return out;
+}
+
+/* 레이저 빔 시뮬레이션
+ * opt.strict : true 이면 빔이 막힌(흡수된) 토큰은 '지나간 토큰'으로 세지 않음 */
+function simulate(toks, opt) {
+  opt = opt || {};
+  const grid = new Array(25).fill(null); let laser = null;
+  for (const t of toks) { if (t.cell == null) continue; grid[t.cell - 1] = t; if (t.type === 'L') laser = t; }
+  const res = { segs: [], touched: new Set(), lit: new Set(), hasLaser: !!laser };
+  if (!laser) return res;
+  const segs = new Map(), seen = new Set(), q = [];
+  const add = (x1, y1, x2, y2, dep) => { const k = x1 + ',' + y1 + ',' + x2 + ',' + y2; if (!segs.has(k)) segs.set(k, [x1, y1, x2, y2, dep]); };
+  const lr = Math.floor((laser.cell - 1) / 5), lc = (laser.cell - 1) % 5, ld = ((laser.o % 4) + 4) % 4;
+  res.touched.add(laser.cell);
+  add(lc + .5, lr + .5, lc + .5 + DX[ld] * .5, lr + .5 + DY[ld] * .5, 0);
+  q.push({ r: lr + DY[ld], c: lc + DX[ld], d: ld, dep: 1 });
+  while (q.length) {
+    const { r, c, d, dep } = q.shift();
+    if (r < 0 || r > 4 || c < 0 || c > 4) continue;
+    const key = (r * 5 + c) * 4 + d; if (seen.has(key)) continue; seen.add(key);
+    const t = grid[r * 5 + c], e = (d + 2) % 4, cx = c + .5, cy = r + .5;
+    const inSeg = () => add(cx + DX[e] * .5, cy + DY[e] * .5, cx, cy, dep);
+    const out = dd => { add(cx, cy, cx + DX[dd] * .5, cy + DY[dd] * .5, dep); q.push({ r: r + DY[dd], c: c + DX[dd], d: dd, dep: dep + 1 }); };
+    const straight = () => { add(cx + DX[e] * .5, cy + DY[e] * .5, cx + DX[d] * .5, cy + DY[d] * .5, dep); q.push({ r: r + DY[d], c: c + DX[d], d, dep: dep + 1 }); };
+    if (!t) { straight(); continue; }
+    const touch = absorbed => { if (t.type !== 'B' && !(opt.strict && absorbed)) res.touched.add(t.cell); };
+    switch (t.type) {
+      case 'B': straight(); break;
+      case 'L': touch(true); break;
+      case 'K': {
+        const horiz = t.o % 2 === 0, pass = horiz ? d % 2 === 1 : d % 2 === 0;
+        touch(!pass); if (pass) straight(); break;
+      }
+      case 'M': touch(false); inSeg(); out(REF[t.o % 2][d]); break;
+      case 'S': touch(false); inSeg(); out(d); out(REF[t.o % 2][d]); break;
+      case 'T': {
+        const k = ((t.o % 4) + 4) % 4;
+        if (e === k || e === (k + 1) % 4) { touch(false); inSeg(); out(e === k ? (k + 1) % 4 : k); }
+        else if (e === (k + 2) % 4) { touch(false); res.lit.add(t.cell); }
+        else touch(true);
+        break;
+      }
+    }
+  }
+  res.segs = [...segs.values()];
+  return res;
+}
+
+/* 성공 조건 판정 */
+function evaluate(p, toks, opt) {
+  opt = opt || {};
+  const sim = simulate(toks, opt);
+  const placed = toks.every(t => t.cell != null);
+  const need = toks.filter(t => t.type !== 'B');
+  const touchedN = need.filter(t => t.cell != null && sim.touched.has(t.cell)).length;
+  const litN = sim.lit.size;
+  const mustOk = toks.filter(t => t.must).every(t => t.cell != null && sim.lit.has(t.cell));
+  const tgtOk = opt.geTargets ? litN >= p.targets : litN === p.targets;
+  const ok = placed && sim.hasLaser && touchedN === need.length && tgtOk && mustOk;
+  const sum = toks.reduce((s, t) => s + (t.cell || 0), 0);
+  return { sim, placed, needN: need.length, touchedN, litN, mustOk, ok,
+           code: ok ? String(sum).padStart(4, '0') : null,
+           cells: toks.filter(t => t.cell != null).map(t => t.cell).sort((a, b) => a - b) };
+}
+
+</script>
+<script id="view3d">
+/* ===== 레이저 메이즈 3D 뷰 (WebGL2, 외부 라이브러리 없음) =====
+ * 좌표: x=동(+), z=남(+, 플레이어 쪽), y=위. 칸 중심 = (c-2, r-2), 보드 윗면 y=0, 책상 y=-0.5
+ */
+(function (global) {
+'use strict';
+const D2R = Math.PI / 180, TAU = Math.PI * 2;
+const DX = [0, 1, 0, -1], DY = [-1, 0, 1, 0];
+
+/* ---------- 수학 ---------- */
+const norm3 = v => { const l = Math.hypot(v[0], v[1], v[2]) || 1; return [v[0] / l, v[1] / l, v[2] / l]; };
+const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+const m4 = {
+  id() { const o = new Float32Array(16); o[0] = o[5] = o[10] = o[15] = 1; return o; },
+  mul(a, b) { const o = new Float32Array(16); for (let c = 0; c < 4; c++) for (let r = 0; r < 4; r++) { let s = 0; for (let k = 0; k < 4; k++) s += a[k * 4 + r] * b[c * 4 + k]; o[c * 4 + r] = s; } return o; },
+  persp(f, a, n, fa) { const t = 1 / Math.tan(f / 2), o = new Float32Array(16); o[0] = t / a; o[5] = t; o[10] = (fa + n) / (n - fa); o[11] = -1; o[14] = 2 * fa * n / (n - fa); return o; },
+  ortho(l, r, b, t, n, f) { const o = new Float32Array(16); o[0] = 2 / (r - l); o[5] = 2 / (t - b); o[10] = -2 / (f - n); o[12] = -(r + l) / (r - l); o[13] = -(t + b) / (t - b); o[14] = -(f + n) / (f - n); o[15] = 1; return o; },
+  look(e, c, u) {
+    const z = norm3([e[0] - c[0], e[1] - c[1], e[2] - c[2]]), x = norm3(cross(u, z)), y = cross(z, x);
+    return new Float32Array([x[0], y[0], z[0], 0, x[1], y[1], z[1], 0, x[2], y[2], z[2], 0, -dot(x, e), -dot(y, e), -dot(z, e), 1]);
+  },
+  inv(a) {
+    const o = new Float32Array(16);
+    const a00 = a[0], a01 = a[1], a02 = a[2], a03 = a[3], a10 = a[4], a11 = a[5], a12 = a[6], a13 = a[7], a20 = a[8], a21 = a[9], a22 = a[10], a23 = a[11], a30 = a[12], a31 = a[13], a32 = a[14], a33 = a[15];
+    const b00 = a00 * a11 - a01 * a10, b01 = a00 * a12 - a02 * a10, b02 = a00 * a13 - a03 * a10, b03 = a01 * a12 - a02 * a11, b04 = a01 * a13 - a03 * a11, b05 = a02 * a13 - a03 * a12, b06 = a20 * a31 - a21 * a30, b07 = a20 * a32 - a22 * a30, b08 = a20 * a33 - a23 * a30, b09 = a21 * a32 - a22 * a31, b10 = a21 * a33 - a23 * a31, b11 = a22 * a33 - a23 * a32;
+    let det = b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06; det = 1 / det;
+    o[0] = (a11 * b11 - a12 * b10 + a13 * b09) * det; o[1] = (a02 * b10 - a01 * b11 - a03 * b09) * det; o[2] = (a31 * b05 - a32 * b04 + a33 * b03) * det; o[3] = (a22 * b04 - a21 * b05 - a23 * b03) * det;
+    o[4] = (a12 * b08 - a10 * b11 - a13 * b07) * det; o[5] = (a00 * b11 - a02 * b08 + a03 * b07) * det; o[6] = (a32 * b02 - a30 * b05 - a33 * b01) * det; o[7] = (a20 * b05 - a22 * b02 + a23 * b01) * det;
+    o[8] = (a10 * b10 - a11 * b08 + a13 * b06) * det; o[9] = (a01 * b08 - a00 * b10 - a03 * b06) * det; o[10] = (a30 * b04 - a31 * b02 + a33 * b00) * det; o[11] = (a21 * b02 - a20 * b04 - a23 * b00) * det;
+    o[12] = (a11 * b07 - a10 * b09 - a12 * b06) * det; o[13] = (a00 * b09 - a01 * b07 + a02 * b06) * det; o[14] = (a31 * b01 - a30 * b03 - a32 * b00) * det; o[15] = (a20 * b03 - a21 * b01 + a22 * b00) * det;
+    return o;
+  },
+  /* 위치 p, Y축 회전 ang, 균일 배율 s */
+  trs(px, py, pz, ang, s) { const o = m4.id(), c = Math.cos(ang) * s, sn = Math.sin(ang) * s; o[0] = c; o[2] = -sn; o[5] = s; o[8] = sn; o[10] = c; o[12] = px; o[13] = py; o[14] = pz; return o; },
+  rotY(a) { return m4.trs(0, 0, 0, a, 1); }
+};
+const xf = (m, p) => { const x = p[0], y = p[1], z = p[2], w = m[3] * x + m[7] * y + m[11] * z + m[15]; return [(m[0] * x + m[4] * y + m[8] * z + m[12]) / w, (m[1] * x + m[5] * y + m[9] * z + m[13]) / w, (m[2] * x + m[6] * y + m[10] * z + m[14]) / w, w]; };
+
+/* ---------- 메시 빌더 ---------- */
+class MB {
+  constructor() { this.p = []; this.n = []; this.u = []; this.i = []; this.T = null; }
+  setT(m) { this.T = m; return this; }
+  v(x, y, z, nx, ny, nz, u, w) {
+    const T = this.T;
+    if (T) {
+      const X = T[0] * x + T[4] * y + T[8] * z + T[12], Y = T[1] * x + T[5] * y + T[9] * z + T[13], Z = T[2] * x + T[6] * y + T[10] * z + T[14];
+      const NX = T[0] * nx + T[4] * ny + T[8] * nz, NY = T[1] * nx + T[5] * ny + T[9] * nz, NZ = T[2] * nx + T[6] * ny + T[10] * nz;
+      x = X; y = Y; z = Z; nx = NX; ny = NY; nz = NZ;
+    }
+    this.p.push(x, y, z); this.n.push(nx, ny, nz); this.u.push(u || 0, w || 0);
+    return this.p.length / 3 - 1;
+  }
+  t(a, b, c) { this.i.push(a, b, c); }
+  q(a, b, c, d) { this.i.push(a, b, c, a, c, d); }
+  box(cx, cy, cz, sx, sy, sz) {
+    const x0 = cx - sx / 2, x1 = cx + sx / 2, y0 = cy - sy / 2, y1 = cy + sy / 2, z0 = cz - sz / 2, z1 = cz + sz / 2;
+    const f = (n, a, b, c, d) => this.q(this.v(...a, ...n), this.v(...b, ...n), this.v(...c, ...n), this.v(...d, ...n));
+    f([0, 1, 0], [x0, y1, z0], [x1, y1, z0], [x1, y1, z1], [x0, y1, z1]);
+    f([0, -1, 0], [x0, y0, z0], [x1, y0, z0], [x1, y0, z1], [x0, y0, z1]);
+    f([1, 0, 0], [x1, y0, z0], [x1, y0, z1], [x1, y1, z1], [x1, y1, z0]);
+    f([-1, 0, 0], [x0, y0, z0], [x0, y0, z1], [x0, y1, z1], [x0, y1, z0]);
+    f([0, 0, 1], [x0, y0, z1], [x1, y0, z1], [x1, y1, z1], [x0, y1, z1]);
+    f([0, 0, -1], [x0, y0, z0], [x1, y0, z0], [x1, y1, z0], [x0, y1, z0]);
+  }
+  /* 볼록 다각형(x,z) 압출. opt: bevel, smooth, noBottom */
+  poly(pts, y0, y1, o) {
+    o = o || {};
+    const n = pts.length, b = o.bevel || 0, sm = !!o.smooth;
+    let cx = 0, cz = 0; for (const p of pts) { cx += p[0]; cz += p[1]; } cx /= n; cz /= n;
+    const en = [];
+    for (let i = 0; i < n; i++) {
+      const a = pts[i], c = pts[(i + 1) % n]; const dx = c[0] - a[0], dz = c[1] - a[1], l = Math.hypot(dx, dz) || 1;
+      let nx = dz / l, nz = -dx / l;
+      if (((a[0] + c[0]) / 2 - cx) * nx + ((a[1] + c[1]) / 2 - cz) * nz < 0) { nx = -nx; nz = -nz; }
+      en.push([nx, nz]);
+    }
+    const vn = pts.map((p, i) => { const e0 = en[(i + n - 1) % n], e1 = en[i]; const x = e0[0] + e1[0], z = e0[1] + e1[1], l = Math.hypot(x, z) || 1; return [x / l, z / l]; });
+    const yt = y1 - b;
+    for (let i = 0; i < n; i++) {
+      const j = (i + 1) % n, a = pts[i], c = pts[j], na = sm ? vn[i] : en[i], nc = sm ? vn[j] : en[i];
+      this.q(this.v(a[0], y0, a[1], na[0], 0, na[1]), this.v(c[0], y0, c[1], nc[0], 0, nc[1]), this.v(c[0], yt, c[1], nc[0], 0, nc[1]), this.v(a[0], yt, a[1], na[0], 0, na[1]));
+    }
+    let top = pts;
+    if (b > 0) {
+      let rad = 0; for (const p of pts) rad = Math.max(rad, Math.hypot(p[0] - cx, p[1] - cz));
+      const k = 1 - b / rad; top = pts.map(p => [cx + (p[0] - cx) * k, cz + (p[1] - cz) * k]);
+      const bn = e => { const l = Math.hypot(e[0], .9, e[1]); return [e[0] / l, .9 / l, e[1] / l]; };
+      for (let i = 0; i < n; i++) {
+        const j = (i + 1) % n, na = bn(sm ? vn[i] : en[i]), nc = bn(sm ? vn[j] : en[i]);
+        this.q(this.v(pts[i][0], yt, pts[i][1], ...na), this.v(pts[j][0], yt, pts[j][1], ...nc), this.v(top[j][0], y1, top[j][1], ...nc), this.v(top[i][0], y1, top[i][1], ...na));
+      }
+    }
+    const ci = this.v(cx, y1, cz, 0, 1, 0), ring = top.map(p => this.v(p[0], y1, p[1], 0, 1, 0));
+    for (let i = 0; i < n; i++) this.t(ci, ring[i], ring[(i + 1) % n]);
+    if (!o.noBottom) {
+      const cb = this.v(cx, y0, cz, 0, -1, 0), rb = pts.map(p => this.v(p[0], y0, p[1], 0, -1, 0));
+      for (let i = 0; i < n; i++) this.t(cb, rb[i], rb[(i + 1) % n]);
+    }
+  }
+  /* 회전체: profile [[r,y],...] */
+  lathe(profile, seg) {
+    const m = profile.length, rows = [];
+    for (let k = 0; k < m; k++) {
+      const a = profile[Math.max(k - 1, 0)], c = profile[Math.min(k + 1, m - 1)];
+      let tr = c[0] - a[0], ty = c[1] - a[1]; const l = Math.hypot(tr, ty) || 1; tr /= l; ty /= l;
+      const nr = ty, ny = -tr, row = [];
+      for (let s = 0; s <= seg; s++) { const ph = TAU * s / seg, cs = Math.cos(ph), sn = Math.sin(ph); row.push(this.v(profile[k][0] * cs, profile[k][1], profile[k][0] * sn, nr * cs, ny, nr * sn)); }
+      rows.push(row);
+    }
+    for (let k = 0; k < m - 1; k++) for (let s = 0; s < seg; s++) this.q(rows[k][s], rows[k][s + 1], rows[k + 1][s + 1], rows[k + 1][s]);
+  }
+  tube(path, r, seg) {
+    const n = path.length;
+    const T = path.map((p, i) => { const a = path[Math.max(i - 1, 0)], c = path[Math.min(i + 1, n - 1)]; return norm3([c[0] - a[0], c[1] - a[1], c[2] - a[2]]); });
+    let nr = norm3(Math.abs(T[0][1]) < .9 ? cross(T[0], [0, 1, 0]) : cross(T[0], [1, 0, 0]));
+    const rings = [];
+    for (let i = 0; i < n; i++) {
+      if (i > 0) { const t = T[i], d = dot(nr, t); nr = norm3([nr[0] - d * t[0], nr[1] - d * t[1], nr[2] - d * t[2]]); }
+      const bn = cross(T[i], nr), row = [];
+      for (let s = 0; s <= seg; s++) {
+        const a = TAU * s / seg, cs = Math.cos(a), sn = Math.sin(a), d = [nr[0] * cs + bn[0] * sn, nr[1] * cs + bn[1] * sn, nr[2] * cs + bn[2] * sn];
+        row.push(this.v(path[i][0] + d[0] * r, path[i][1] + d[1] * r, path[i][2] + d[2] * r, d[0], d[1], d[2]));
+      }
+      rings.push(row);
+    }
+    for (let i = 0; i < n - 1; i++) for (let s = 0; s < seg; s++) this.q(rings[i][s], rings[i][s + 1], rings[i + 1][s + 1], rings[i + 1][s]);
+  }
+  fan(pts, nrm) {
+    let cx = 0, cy = 0, cz = 0; for (const p of pts) { cx += p[0]; cy += p[1]; cz += p[2]; } const k = pts.length;
+    const c = this.v(cx / k, cy / k, cz / k, ...nrm), ring = pts.map(p => this.v(p[0], p[1], p[2], ...nrm));
+    for (let i = 0; i < k; i++) this.t(c, ring[i], ring[(i + 1) % k]);
+  }
+  quadXZ(x0, z0, x1, z1, y) {
+    this.q(this.v(x0, y, z0, 0, 1, 0, 0, 0), this.v(x1, y, z0, 0, 1, 0, 1, 0), this.v(x1, y, z1, 0, 1, 0, 1, 1), this.v(x0, y, z1, 0, 1, 0, 0, 1));
+  }
+}
+function rr(hw, hd, r, seg, cut) {
+  const pts = [], C = [[hw - r, -hd + r, -90], [hw - r, hd - r, 0], [-hw + r, hd - r, 90], [-hw + r, -hd + r, 180]];
+  C.forEach((c, i) => {
+    if (cut && cut[i]) { const k = cut[i], sx = Math.sign(c[0]), sz = Math.sign(c[1]);
+      /* 모서리를 대각선으로 자름 */
+      const px = sx * hw, pz = sz * hd;
+      if (i === 0) { pts.push([px - k, pz]); pts.push([px, pz + k]); }
+      if (i === 1) { pts.push([px, pz - k]); pts.push([px - k, pz]); }
+      if (i === 2) { pts.push([px + k, pz]); pts.push([px, pz - k]); }
+      if (i === 3) { pts.push([px, pz + k]); pts.push([px + k, pz]); }
+      return;
+    }
+    for (let s = 0; s <= seg; s++) { const a = (c[2] + 90 * s / seg) * D2R; pts.push([c[0] + r * Math.cos(a), c[1] + r * Math.sin(a)]); }
+  });
+  return pts;
+}
+/* 둥근 아치 경로(평면 xy, z=0) */
+function archPath(W, H, rc, y0, n) {
+  n = n || 8; const pts = [[-W / 2, y0, 0], [-W / 2, H - rc, 0]];
+  for (let i = 1; i <= n; i++) { const a = Math.PI - (Math.PI / 2) * i / n; pts.push([-W / 2 + rc + rc * Math.cos(a), H - rc + rc * Math.sin(a), 0]); }
+  for (let i = 0; i <= n; i++) { const a = Math.PI / 2 - (Math.PI / 2) * i / n; pts.push([W / 2 - rc + rc * Math.cos(a), H - rc + rc * Math.sin(a), 0]); }
+  pts.push([W / 2, y0, 0]); return pts;
+}
+
+/* ---------- 셰이더 ---------- */
+const VS = `#version 300 es
+in vec3 aPos; in vec3 aNor; in vec2 aUV;
+uniform mat4 uM, uVP, uLVP;
+out vec3 vW; out vec3 vN; out vec2 vUV; out vec4 vL;
+void main(){ vec4 w=uM*vec4(aPos,1.0); vW=w.xyz; vN=mat3(uM)*aNor; vUV=aUV; vL=uLVP*w; gl_Position=uVP*w; }`;
+const FS = `#version 300 es
+precision highp float; precision highp sampler2DShadow;
+in vec3 vW; in vec3 vN; in vec2 vUV; in vec4 vL;
+uniform int uMode; uniform vec3 uCol; uniform float uAlpha, uSpec, uShin; uniform vec3 uEmis;
+uniform vec3 uCam, uLdir; uniform sampler2D uTex; uniform sampler2DShadow uSh; uniform vec2 uUVs;
+out vec4 o;
+float shadow(){
+  vec3 p=vL.xyz/vL.w*0.5+0.5;
+  if(p.x<0.||p.x>1.||p.y<0.||p.y>1.||p.z>1.) return 1.0;
+  float s=0.0; float t=1.0/2048.0;
+  for(int i=-1;i<=1;i++) for(int j=-1;j<=1;j++) s+=texture(uSh,vec3(p.xy+vec2(float(i),float(j))*t,p.z-0.0012));
+  return s/9.0;
+}
+void main(){
+  if(uMode==3){ o=vec4(uCol+uEmis,uAlpha); return; }
+  if(uMode==4){ vec4 t=texture(uTex,vUV); o=vec4(t.rgb,t.a*uAlpha); return; }
+  vec3 N=normalize(vN); vec3 V=normalize(uCam-vW); vec3 L=normalize(uLdir);
+  if((uMode==1||uMode==2) && dot(N,V)<0.0) N=-N;
+  vec3 base=uCol;
+  if(uMode==5) base=texture(uTex,vUV*uUVs).rgb;
+  float sh=shadow();
+  float ndl=max(dot(N,L),0.0);
+  vec3 amb=mix(vec3(0.34,0.33,0.34),vec3(0.70,0.74,0.82),N.y*0.5+0.5);
+  vec3 H=normalize(L+V);
+  float spec=pow(max(dot(N,H),0.0),uShin)*uSpec;
+  vec3 col;
+  if(uMode==1){
+    vec3 R=reflect(-V,N); float y=R.y;
+    vec3 env=mix(vec3(0.46,0.52,0.54),vec3(0.66,0.74,0.88),smoothstep(-0.25,0.3,y));
+    env=mix(env,vec3(0.99,1.0,1.0),smoothstep(0.35,0.9,y));
+    col=env*uCol+spec*sh*1.6; o=vec4(col+uEmis,1.0); return;
+  }
+  if(uMode==2){
+    float fr=pow(1.0-max(dot(N,V),0.0),3.0);
+    col=base*(amb*0.85+ndl*sh*0.35)+spec*sh*1.6+fr*0.45;
+    o=vec4(col+uEmis,clamp(uAlpha+fr*0.4,0.0,1.0)); return;
+  }
+  col=base*(amb*0.80+ndl*sh*0.82)+spec*sh;
+  o=vec4(col+uEmis,uAlpha);
+}`;
+const VS_D = `#version 300 es
+in vec3 aPos; uniform mat4 uM, uLVP; void main(){ gl_Position=uLVP*uM*vec4(aPos,1.0); }`;
+const FS_D = `#version 300 es
+precision mediump float; void main(){}`;
+
+/* ---------- 색 ---------- */
+const hex = h => [parseInt(h.slice(1, 3), 16) / 255, parseInt(h.slice(3, 5), 16) / 255, parseInt(h.slice(5, 7), 16) / 255];
+const C = { L: hex('#dc2a21'), T: hex('#6b34b8'), S: hex('#6cc41c'), M: hex('#1aa9e2'), K: hex('#f5c40c'), B: hex('#202024'), gray: hex('#dfe2e6'), white: hex('#f3f3f1'), red: hex('#d9231c') };
+const mat = (c, o) => Object.assign({ mode: 0, color: c, alpha: 1, spec: .45, shin: 40, emis: [0, 0, 0] }, o || {});
+
+/* ======================================================= */
+function create(canvas, overlay, api) {
+  const gl = canvas.getContext('webgl2', { antialias: true, alpha: false, powerPreference: 'high-performance' });
+  if (!gl) return null;
+
+  /* --- 프로그램 --- */
+  function prog(vs, fs) {
+    const p = gl.createProgram();
+    for (const [t, s] of [[gl.VERTEX_SHADER, vs], [gl.FRAGMENT_SHADER, fs]]) {
+      const sh = gl.createShader(t); gl.shaderSource(sh, s); gl.compileShader(sh);
+      if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(sh));
+      gl.attachShader(p, sh);
+    }
+    gl.bindAttribLocation(p, 0, 'aPos'); gl.bindAttribLocation(p, 1, 'aNor'); gl.bindAttribLocation(p, 2, 'aUV');
+    gl.linkProgram(p); if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p));
+    const u = {}; const n = gl.getProgramParameter(p, gl.ACTIVE_UNIFORMS);
+    for (let i = 0; i < n; i++) { const nm = gl.getActiveUniform(p, i).name; u[nm] = gl.getUniformLocation(p, nm); }
+    return { p, u };
+  }
+  const P = prog(VS, FS), PD = prog(VS_D, FS_D);
+
+  /* --- 메시 업로드 --- */
+  function upload(mb) {
+    const vao = gl.createVertexArray(); gl.bindVertexArray(vao);
+    const buf = (data, loc, size) => { const b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, size, gl.FLOAT, false, 0, 0); };
+    buf(mb.p, 0, 3); buf(mb.n, 1, 3); buf(mb.u, 2, 2);
+    const ib = gl.createBuffer(); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ib); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(mb.i), gl.STATIC_DRAW);
+    gl.bindVertexArray(null);
+    return { vao, n: mb.i.length };
+  }
+  const part = (mb, m, tag) => ({ mesh: upload(mb), mat: m, tag: tag || '' });
+
+  /* --- 텍스처 --- */
+  function tex(cv, repeat) {
+    const t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, t);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, cv);
+    gl.generateMipmap(gl.TEXTURE_2D);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    const w = repeat ? gl.REPEAT : gl.CLAMP_TO_EDGE; gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, w); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, w);
+    return t;
+  }
+  const mkCanvas = (w, h) => { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; };
+
+  /* --- 그림자 맵 --- */
+  const SH = 2048;
+  const shTex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, shTex);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT24, SH, SH, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_INT, null);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_MODE, gl.COMPARE_REF_TO_TEXTURE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_FUNC, gl.LEQUAL);
+  const shFB = gl.createFramebuffer(); gl.bindFramebuffer(gl.FRAMEBUFFER, shFB);
+  gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, shTex, 0);
+  gl.drawBuffers([gl.NONE]); gl.readBuffer(gl.NONE); gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+  const LDIR = norm3([-0.5, 0.82, 0.45]);
+  const lightVP = m4.mul(m4.ortho(-7.5, 7.5, -7.5, 7.5, 2, 40), m4.look([LDIR[0] * 16, LDIR[1] * 16, LDIR[2] * 16 + 0.5], [0, 0, 0.5], [0, 0, -1]));
+
+  /* =========== 모델 =========== */
+  const GRAYM = () => mat(C.gray, { spec: .5, shin: 50 });
+  const baseOf = col => { const mb = new MB(); mb.poly(rr(.40, .40, .07, 4, [0, 0, .13, 0]), 0, .07, { bevel: .02, smooth: true }); return part(mb, mat(col, { spec: .6, shin: 60 })); };
+  function archParts(W, H, rc, tr, plane, pane) {
+    const out = [], mb = new MB(); mb.setT(plane);
+    mb.tube(archPath(W, H, rc, .07, 8), tr, 8); out.push(part(mb, GRAYM()));
+    if (pane) {
+      const ins = .06, pm = new MB(); pm.setT(plane);
+      const pp = archPath(W - 2 * ins, H - ins, Math.max(rc - ins, .05), .07 + .03, 8);
+      pm.fan(pp.map(p => [p[0], p[1], pane.z || 0]), [0, 0, 1]);
+      out.push(part(pm, pane.mat, 'pane'));
+    }
+    return out;
+  }
+  const planeAlong = a => m4.trs(0, 0, 0, a, 1);   // 평면의 x축이 어느 방향을 향하게 할지
+  const MODELS = {};
+  MODELS.L = () => {
+    const out = [baseOf(C.L)], b = new MB();
+    b.poly(rr(.27, .30, .06, 4), .07, .58, { bevel: .05, smooth: true });
+    b.poly(rr(.21, .24, .05, 4), .58, .80, { bevel: .04, smooth: true });
+    out.push(part(b, GRAYM()));
+    const body2 = new MB(); body2.poly(rr(.275, .305, .06, 4), .07, .20, { bevel: .02, smooth: true }); out.push(part(body2, mat(C.L, { spec: .5, shin: 40 })));
+    const btn = new MB(); btn.lathe([[0, .80], [.095, .80], [.095, .85], [.075, .90], [0, .92]], 14); out.push(part(btn, mat(C.red, { spec: .9, shin: 80 })));
+    const ring = new MB(), lens = new MB(), z = -.312, ringPath = [], disc = [];
+    for (let i = 0; i <= 20; i++) { const a = TAU * i / 20; ringPath.push([.11 * Math.cos(a), .42 + .11 * Math.sin(a), z]); }
+    ring.tube(ringPath, .02, 6); out.push(part(ring, mat(hex('#2b2b30'), { spec: .6 })));
+    for (let i = 0; i < 20; i++) { const a = TAU * i / 20; disc.push([.095 * Math.cos(a), .42 + .095 * Math.sin(a), z - .004]); }
+    lens.fan(disc, [0, 0, -1]); out.push(part(lens, mat(hex('#8e0d0d'), { spec: .9, shin: 90 }), 'lens'));
+    return out;
+  };
+  MODELS.T = () => {
+    const out = [baseOf(C.T)], tri = [[-.32, -.32], [-.32, .32], [.32, .32]];
+    const b = new MB(); b.poly(tri, .07, .9, { bevel: .02 }); out.push(part(b, GRAYM()));
+    // 대각선(거울) 면: 로컬 x축이 (1,0,1)/√2 방향
+    const plane = m4.mul(m4.trs(0, 0, 0, -Math.PI / 4, 1), m4.trs(0, 0, -.014, 0, 1));
+    out.push(...archParts(.9, .92, .17, .028, plane, { z: -.002, mat: mat([.95, .97, 1], { mode: 1 }) }));
+    // 타겟 면(남쪽 z=+.32)
+    const bz = new MB(); bz.box(0, .47, .322, .52, .66, .012); out.push(part(bz, GRAYM()));
+    const tg = new MB(); tg.box(0, .47, .331, .42, .56, .012); out.push(part(tg, mat(hex('#c8160f'), { mode: 0, spec: .8, shin: 90, emis: [.22, .02, .02] }), 'tgt'));
+    // 윗면 빨간 삼각형
+    const cx = (-.32 - .32 + .32) / 3, cz = (-.32 + .32 + .32) / 3;
+    const rt = new MB(); rt.poly(tri.map(p => [cx + (p[0] - cx) * .55, cz + (p[1] - cz) * .55]), .9, .915, { noBottom: true });
+    out.push(part(rt, mat(C.red, { spec: .6 })));
+    return out;
+  };
+  const diagModel = (col, paneMat) => () => {
+    const out = [baseOf(col)];
+    out.push(...archParts(.94, .95, .2, .032, planeAlong(-Math.PI / 4), { z: 0, mat: paneMat }));
+    return out;
+  };
+  MODELS.S = diagModel(C.S, mat([.55, .95, .55], { mode: 2, alpha: .30, spec: .9, shin: 90 }));
+  MODELS.M = diagModel(C.M, mat([.96, .98, 1], { mode: 1 }));
+  MODELS.K = () => {
+    const out = [baseOf(C.K)];
+    out.push(...archParts(.52, .98, .26, .05, planeAlong(-Math.PI / 2), null));
+    return out;
+  };
+  MODELS.B = () => {
+    const out = [baseOf(C.B)], b = new MB();
+    b.poly(rr(.27, .27, .06, 4), .07, .34, { bevel: .05, smooth: true }); out.push(part(b, mat(C.white, { spec: .7, shin: 70 })));
+    return out;
+  };
+
+  /* =========== 정적 장면 =========== */
+  const statics = [];
+  function sPart(mb, m, o) { const p = part(mb, m); p.M = m4.id(); p.cast = !!(o && o.cast); statics.push(p); return p; }
+  // 책상 매트
+  const matCv = mkCanvas(512, 512), mc = matCv.getContext('2d');
+  mc.fillStyle = '#1d4a44'; mc.fillRect(0, 0, 512, 512);
+  mc.strokeStyle = 'rgba(255,255,255,.22)'; mc.lineWidth = 1.2;
+  for (let i = 0; i <= 8; i++) { const p = i * 64; mc.beginPath(); mc.moveTo(p, 0); mc.lineTo(p, 512); mc.moveTo(0, p); mc.lineTo(512, p); mc.stroke(); }
+  mc.strokeStyle = 'rgba(255,255,255,.5)'; mc.lineWidth = 3; mc.strokeRect(0, 0, 512, 512);
+  const matTex = tex(matCv, true);
+  { const mb = new MB(); mb.quadXZ(-30, -30, 30, 30, -.5); const p = sPart(mb, mat([1, 1, 1], { mode: 5, spec: .05, shin: 10 })); p.tex = matTex; p.uvs = [15, 15]; }
+  // 보드
+  { const mb = new MB(); mb.poly(rr(3.08, 3.08, .32, 6), -.5, -.1, { bevel: .05, smooth: true }); sPart(mb, mat(C.red, { spec: .6, shin: 50 }), { cast: true }); }
+  { const mb = new MB(); mb.poly(rr(2.96, 2.96, .30, 6), -.1, 0, { bevel: .03, smooth: true }); sPart(mb, mat(C.white, { spec: .55, shin: 45 }), { cast: true }); }
+  { const mb = new MB(); const e = 2.885;
+    mb.box(0, .03, -e, 5.9, .06, .13); mb.box(0, .03, e, 5.9, .06, .13); mb.box(-e, .03, 0, .13, .06, 5.9); mb.box(e, .03, 0, .13, .06, 5.9);
+    for (const s of [-1, 1]) { mb.box(s * 1.2, .04, 3.0, .75, .08, .1); mb.box(s * 1.2, .04, -3.0, .75, .08, .1); mb.box(3.0, .04, s * 1.2, .1, .08, .75); mb.box(-3.0, .04, s * 1.2, .1, .08, .75); }
+    sPart(mb, mat(C.white, { spec: .55, shin: 45 }), { cast: true }); }
+  { const mb = new MB(), h = .45, w = .05;
+    for (let r = 0; r < 5; r++) for (let c = 0; c < 5; c++) { const x = c - 2, z = r - 2;
+      mb.box(x, .015, z - h + w / 2, 2 * h, .03, w); mb.box(x, .015, z + h - w / 2, 2 * h, .03, w);
+      mb.box(x - h + w / 2, .015, z, w, .03, 2 * h - 2 * w); mb.box(x + h - w / 2, .015, z, w, .03, 2 * h - 2 * w); }
+    sPart(mb, mat([.93, .93, .91], { spec: .5, shin: 40 })); }
+  // 번호 데칼
+  const numCv = mkCanvas(1024, 1024), nc = numCv.getContext('2d');
+  nc.font = '800 46px system-ui,sans-serif'; nc.textBaseline = 'top'; nc.fillStyle = 'rgba(70,84,108,.85)';
+  for (let i = 1; i <= 25; i++) { const r = Math.floor((i - 1) / 5), c = (i - 1) % 5; nc.fillText(String(i), c * 204.8 + 26, r * 204.8 + 22); }
+  { const mb = new MB(); mb.quadXZ(-2.5, -2.5, 2.5, 2.5, .034); const p = sPart(mb, mat([1, 1, 1], { mode: 4 })); p.tex = tex(numCv, false); p.decal = true; }
+  // 추가 토큰 매트
+  const trayCv = mkCanvas(1040, 300), tc = trayCv.getContext('2d');
+  tc.fillStyle = 'rgba(8,18,30,.55)'; tc.beginPath(); tc.roundRect ? tc.roundRect(8, 8, 1024, 284, 36) : tc.rect(8, 8, 1024, 284); tc.fill();
+  tc.strokeStyle = 'rgba(255,255,255,.5)'; tc.lineWidth = 4; tc.setLineDash([22, 14]); tc.stroke(); tc.setLineDash([]);
+  tc.fillStyle = 'rgba(255,255,255,.85)'; tc.font = '800 44px system-ui,sans-serif'; tc.textBaseline = 'top'; tc.textAlign='right'; tc.fillText('추가할 토큰', 1000, 24);
+  { const mb = new MB(); mb.quadXZ(-2.6, 3.15, 2.6, 4.65, -.495); const p = sPart(mb, mat([1, 1, 1], { mode: 4 })); p.tex = tex(trayCv, false); p.decal = true; }
+
+  // 하이라이트 사각형, 빔 원기둥, 구
+  const hiliteMesh = (() => { const mb = new MB(); mb.quadXZ(-.43, -.43, .43, .43, .036); return upload(mb); })();
+  const cylMesh = (() => { const mb = new MB(), s = 10, r = []; for (let k = 0; k < 2; k++) { const row = []; for (let i = 0; i <= s; i++) { const a = TAU * i / s; row.push(mb.v(Math.cos(a), Math.sin(a), k, Math.cos(a), Math.sin(a), 0)); } r.push(row); } for (let i = 0; i < s; i++) mb.q(r[0][i], r[0][i + 1], r[1][i + 1], r[1][i]); return upload(mb); })();
+  const sphereMesh = (() => { const mb = new MB(), pr = []; for (let i = 0; i <= 10; i++) { const a = -Math.PI / 2 + Math.PI * i / 10; pr.push([Math.cos(a), Math.sin(a)]); } mb.lathe(pr, 14); return upload(mb); })();
+
+  const models = {}; for (const k in MODELS) models[k] = MODELS[k]();
+
+  /* =========== 상태 =========== */
+  const BEAM_Y = .47, TOPY = 0, TABLEY = -.5;
+  let S = { toks: null }, anims = {}, badges = {}, beamT0 = null, drag = null, hoverCell = null;
+  const cam = { phi: 0, theta: 52 * D2R, zoom: 1, tphi: 0, ttheta: 52 * D2R, tzoom: 1 };
+  const tgt = [0, 0, 0.5];
+  const cellPos = c => [((c - 1) % 5) - 2, Math.floor((c - 1) / 5) - 2];
+  function slotPos(t, toks) {
+    const added = toks.filter(x => !x.fixedPos), i = added.indexOf(t), n = added.length;
+    return [(i - (n - 1) / 2) * 1.3, 4.05];
+  }
+  function sync(anim) {
+    const s = api.state();
+    if (s.toks !== S.toks) {
+      anims = {}; overlay.innerHTML = ''; badges = {}; drag = null;
+      s.toks.forEach(t => {
+        const e = document.createElement('div'); e.className = 'ob';
+        e.innerHTML = '<div class="top"><i class="r">↻</i><i class="m">◎</i><i class="x">!</i></div><div class="num"></div>';
+        overlay.appendChild(e); badges[t.id] = e;
+      });
+    }
+    S = s;
+    if (!s.fired) beamT0 = null; else if (anim) beamT0 = performance.now(); else if (beamT0 === null) beamT0 = -1e9;
+  }
+
+  /* =========== 카메라 =========== */
+  let VP = m4.id(), camPos = [0, 8, 8], W = 1, H = 1, dpr = 1;
+  function camMatrix(dist, aspect) {
+    const e = [tgt[0] + dist * Math.sin(cam.phi) * Math.cos(cam.theta), tgt[1] + dist * Math.sin(cam.theta), tgt[2] + dist * Math.cos(cam.phi) * Math.cos(cam.theta)];
+    return { e, vp: m4.mul(m4.persp(38 * D2R, aspect, .5, 90), m4.look(e, tgt, [0, 1, 0])) };
+  }
+  const FIT = []; for (const x of [-3.3, 3.3]) for (const z of [-3.3, 4.9]) for (const y of [-.5, 1.1]) FIT.push([x, y, z]);
+  function fitDist(aspect) {
+    let lo = 4, hi = 90;
+    for (let i = 0; i < 16; i++) {
+      const mid = (lo + hi) / 2, { vp } = camMatrix(mid, aspect);
+      const ok = FIT.every(p => { const q = xf(vp, p); return Math.abs(q[0]) < .97 && Math.abs(q[1]) < .97; });
+      if (ok) hi = mid; else lo = mid;
+    }
+    return hi;
+  }
+  function ray(px, py) {
+    const rect = canvas.getBoundingClientRect(), nx = (px - rect.left) / rect.width * 2 - 1, ny = -((py - rect.top) / rect.height * 2 - 1), inv = m4.inv(VP);
+    const a = xf(inv, [nx, ny, -1]), b = xf(inv, [nx, ny, 1]); return { o: a, d: norm3([b[0] - a[0], b[1] - a[1], b[2] - a[2]]) };
+  }
+  const planeHit = (r, y) => { if (Math.abs(r.d[1]) < 1e-6) return null; const t = (y - r.o[1]) / r.d[1]; return t > 0 ? [r.o[0] + r.d[0] * t, y, r.o[2] + r.d[2] * t] : null; };
+  const cellFrom = p => { if (!p) return null; const c = Math.floor(p[0] + 2.5), r = Math.floor(p[2] + 2.5); return (c >= 0 && c < 5 && r >= 0 && r < 5) ? r * 5 + c + 1 : null; };
+
+  /* =========== 입력 =========== */
+  const ptrs = new Map(); let gest = null, pinch0 = 0;
+  const A = id => anims[id];
+  function pickToken(px, py) {
+    const r = ray(px, py); let best = null, bt = 1e9;
+    for (const t of S.toks) {
+      const a = anims[t.id]; if (!a) continue;
+      const lo = [a.x - .43, a.y, a.z - .43], hi = [a.x + .43, a.y + 1.0, a.z + .43]; let t0 = 0, t1 = 1e9, ok = true;
+      for (let k = 0; k < 3; k++) {
+        if (Math.abs(r.d[k]) < 1e-8) { if (r.o[k] < lo[k] || r.o[k] > hi[k]) ok = false; }
+        else { let a0 = (lo[k] - r.o[k]) / r.d[k], a1 = (hi[k] - r.o[k]) / r.d[k]; if (a0 > a1) [a0, a1] = [a1, a0]; t0 = Math.max(t0, a0); t1 = Math.min(t1, a1); if (t0 > t1) ok = false; }
+      }
+      if (ok && t0 < bt) { bt = t0; best = t; }
+    }
+    return best;
+  }
+  canvas.addEventListener('pointerdown', e => {
+    canvas.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; pinch0 = Math.hypot(a.x - b.x, a.y - b.y); gest = null; drag = null; return; }
+    const hit = S.toks ? pickToken(e.clientX, e.clientY) : null;
+    gest = { id: hit ? hit.id : null, sx: e.clientX, sy: e.clientY, lx: e.clientX, ly: e.clientY, moved: false };
+  });
+  canvas.addEventListener('pointermove', e => {
+    if (!ptrs.has(e.pointerId)) return; ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (ptrs.size === 2) { const [a, b] = [...ptrs.values()], d = Math.hypot(a.x - b.x, a.y - b.y); if (pinch0 > 0) { cam.tzoom = Math.min(1.3, Math.max(.45, cam.tzoom * pinch0 / d)); cam.zoom = cam.tzoom; } pinch0 = d; return; }
+    if (!gest) return;
+    const dx = e.clientX - gest.lx, dy = e.clientY - gest.ly; gest.lx = e.clientX; gest.ly = e.clientY;
+    if (!gest.moved && Math.hypot(e.clientX - gest.sx, e.clientY - gest.sy) > 7) gest.moved = true;
+    if (!gest.moved) return;
+    if (gest.id) {
+      const t = S.toks.find(x => x.id === gest.id);
+      if (!t.fixedPos) { drag = { id: t.id }; const h = planeHit(ray(e.clientX, e.clientY), .6); if (h) { drag.x = h[0]; drag.z = h[2]; hoverCell = cellFrom(planeHit(ray(e.clientX, e.clientY), 0)); } }
+    } else {
+      cam.tphi -= dx * .0065; cam.ttheta = Math.min(88 * D2R, Math.max(20 * D2R, cam.ttheta + dy * .0055)); cam.phi = cam.tphi; cam.theta = cam.ttheta;
+    }
+  });
+  const end = e => {
+    if (!ptrs.has(e.pointerId)) return; ptrs.delete(e.pointerId);
+    if (ptrs.size > 0) { pinch0 = 0; return; }
+    const g = gest; gest = null; if (!g) { drag = null; return; }
+    if (g.id) {
+      const t = S.toks.find(x => x.id === g.id);
+      if (drag && g.moved) {
+        const c = cellFrom(planeHit(ray(e.clientX, e.clientY), 0)); drag = null; hoverCell = null;
+        const occ = c && S.toks.some(x => x.cell === c && x !== t);
+        if (c && !occ) api.place(t.id, c);
+        else if (!c) api.toTray(t.id);
+        else api.refresh();
+      } else if (!g.moved) api.tapToken(t.id);
+    } else if (!g.moved) {
+      api.tapCell(cellFrom(planeHit(ray(e.clientX, e.clientY), 0)));
+    }
+    drag = null;
+  };
+  canvas.addEventListener('pointerup', end); canvas.addEventListener('pointercancel', e => { ptrs.delete(e.pointerId); gest = null; drag = null; });
+  canvas.addEventListener('wheel', e => { e.preventDefault(); cam.tzoom = Math.min(1.3, Math.max(.45, cam.tzoom * Math.exp(e.deltaY * .0012))); cam.zoom = cam.tzoom; }, { passive: false });
+
+  /* =========== 그리기 =========== */
+  function setMat(m, emisAdd) {
+    gl.uniform1i(P.u.uMode, m.mode); gl.uniform3fv(P.u.uCol, m.color); gl.uniform1f(P.u.uAlpha, m.alpha); gl.uniform1f(P.u.uSpec, m.spec); gl.uniform1f(P.u.uShin, m.shin);
+    const e = emisAdd ? [m.emis[0] + emisAdd[0], m.emis[1] + emisAdd[1], m.emis[2] + emisAdd[2]] : m.emis; gl.uniform3fv(P.u.uEmis, e);
+  }
+  function drawMesh(mesh, M, prg) { gl.uniformMatrix4fv(prg.u.uM, false, M); gl.bindVertexArray(mesh.vao); gl.drawElements(gl.TRIANGLES, mesh.n, gl.UNSIGNED_INT, 0); }
+  const ZERO = [0, 0, 0];
+  function segMatrix(x1, z1, x2, z2, r, y) {
+    const dx = x2 - x1, dz = z2 - z1, L = Math.hypot(dx, dz), a = Math.atan2(dx, dz), c = Math.cos(a), s = Math.sin(a), o = new Float32Array(16);
+    o[0] = c * r; o[2] = -s * r; o[5] = r; o[8] = s * L; o[10] = c * L; o[12] = x1; o[13] = y; o[14] = z1; o[15] = 1; return o;
+  }
+  function tokenM(a) { return m4.trs(a.x, a.y, a.z, a.ang, 1); }
+  let last = performance.now(), tNow = 0;
+  function frame(now) {
+    requestAnimationFrame(frame);
+    const dt = Math.min(.05, (now - last) / 1000); last = now; tNow = now / 1000;
+    if (!S.toks) return;
+    // 크기
+    const cw = canvas.clientWidth, ch = canvas.clientHeight; if (!cw || !ch) return;
+    dpr = Math.min(2, window.devicePixelRatio || 1);
+    if (canvas.width !== Math.round(cw * dpr) || canvas.height !== Math.round(ch * dpr)) { canvas.width = Math.round(cw * dpr); canvas.height = Math.round(ch * dpr); }
+    W = canvas.width; H = canvas.height;
+    // 카메라 보간
+    const k = 1 - Math.exp(-dt * 9);
+    cam.phi += (cam.tphi - cam.phi) * k; cam.theta += (cam.ttheta - cam.theta) * k; cam.zoom += (cam.tzoom - cam.zoom) * k;
+    const aspect = W / H, dist = fitDist(aspect) * cam.zoom, cm = camMatrix(dist, aspect); VP = cm.vp; camPos = cm.e;
+    // 토큰 애니메이션
+    const kk = 1 - Math.exp(-dt * 13), toks = S.toks;
+    for (const t of toks) {
+      let a = anims[t.id];
+      let tx, tz, ty, lift = 0;
+      if (drag && drag.id === t.id && drag.x !== undefined) { tx = drag.x; tz = drag.z; ty = .6 + (TOPY); lift = 0; }
+      else if (t.cell != null) { const p = cellPos(t.cell); tx = p[0]; tz = p[1]; ty = TOPY; }
+      else { const p = slotPos(t, toks); tx = p[0]; tz = p[1]; ty = TABLEY; }
+      const ta = -t.o * 90 * D2R;
+      if (!a) { a = anims[t.id] = { x: tx, y: ty, z: tz, ang: ta, hop: 0 }; }
+      const dd = Math.hypot(tx - a.x, tz - a.z);
+      a.x += (tx - a.x) * kk; a.z += (tz - a.z) * kk; a.ang += (ta - a.ang) * kk;
+      const hopT = Math.min(.55, dd * .28) + (S.selected === t.id ? .14 : 0);
+      a.y += ((ty + hopT) - a.y) * kk;
+    }
+    // ---- 그림자 패스
+    gl.bindFramebuffer(gl.FRAMEBUFFER, shFB); gl.viewport(0, 0, SH, SH); gl.clear(gl.DEPTH_BUFFER_BIT);
+    gl.useProgram(PD.p); gl.uniformMatrix4fv(PD.u.uLVP, false, lightVP); gl.enable(gl.DEPTH_TEST); gl.depthMask(true); gl.disable(gl.BLEND);
+    gl.enable(gl.POLYGON_OFFSET_FILL); gl.polygonOffset(1.5, 3);
+    for (const p of statics) if (p.cast) drawMesh(p.mesh, p.M, PD);
+    for (const t of toks) { const a = anims[t.id], M = tokenM(a); for (const pt of models[t.type]) if (pt.mat.mode !== 2) drawMesh(pt.mesh, M, PD); }
+    gl.disable(gl.POLYGON_OFFSET_FILL);
+    // ---- 본 패스
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.viewport(0, 0, W, H);
+    gl.clearColor(.06, .1, .17, 1); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.useProgram(P.p);
+    gl.uniformMatrix4fv(P.u.uVP, false, VP); gl.uniformMatrix4fv(P.u.uLVP, false, lightVP); gl.uniform3fv(P.u.uCam, camPos); gl.uniform3fv(P.u.uLdir, LDIR);
+    gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, shTex); gl.uniform1i(P.u.uSh, 1);
+    gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, matTex); gl.uniform1i(P.u.uTex, 0); gl.uniform2f(P.u.uUVs, 1, 1);
+    const ev = S.ev, fired = S.fired && ev && ev.sim.hasLaser, pulse = .75 + .25 * Math.sin(tNow * 7);
+    // 정적(불투명)
+    for (const p of statics) {
+      if (p.decal) continue;
+      if (p.tex) { gl.bindTexture(gl.TEXTURE_2D, p.tex); gl.uniform2f(P.u.uUVs, p.uvs ? p.uvs[0] : 1, p.uvs ? p.uvs[1] : 1); }
+      setMat(p.mat); drawMesh(p.mesh, p.M, P);
+    }
+    gl.uniform2f(P.u.uUVs, 1, 1);
+    // 토큰 불투명
+    const glass = [];
+    for (const t of toks) {
+      const a = anims[t.id], M = tokenM(a), sel = S.selected === t.id ? [.16, .16, .16] : null;
+      const litT = fired && t.cell != null && ev.sim.lit.has(t.cell);
+      for (const pt of models[t.type]) {
+        if (pt.mat.mode === 2) { glass.push({ pt, M, a, sel }); continue; }
+        let em = sel;
+        if (pt.tag === 'tgt') em = litT ? [1.0 * pulse + .2, .35 * pulse, .3 * pulse] : (sel || null);
+        if (pt.tag === 'lens') em = fired && t.type === 'L' ? [1, .25, .2] : sel;
+        setMat(pt.mat, em); drawMesh(pt.mesh, M, P);
+      }
+    }
+    // 데칼(번호, 트레이 매트)
+    gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); gl.depthMask(false);
+    for (const p of statics) if (p.decal) { gl.bindTexture(gl.TEXTURE_2D, p.tex); setMat(p.mat); drawMesh(p.mesh, p.M, P); }
+    // 칸 하이라이트
+    const empties = []; const occ = new Set(toks.filter(t => t.cell != null).map(t => t.cell));
+    const showHint = S.selected || (drag && drag.id);
+    if (showHint) for (let c = 1; c <= 25; c++) if (!occ.has(c) || (drag && toks.find(t => t.id === drag.id).cell === c)) empties.push(c);
+    for (const c of empties) {
+      const p = cellPos(c), isHover = drag && hoverCell === c;
+      setMat({ mode: 3, color: [1, 1, 1], alpha: isHover ? .62 : .16 + .08 * Math.sin(tNow * 5), spec: 0, shin: 1, emis: ZERO });
+      drawMesh(hiliteMesh, m4.trs(p[0], 0, p[1], 0, 1), P);
+    }
+    // 유리
+    glass.sort((u, v) => { const du = (u.M[12] - camPos[0]) ** 2 + (u.M[14] - camPos[2]) ** 2, dv = (v.M[12] - camPos[0]) ** 2 + (v.M[14] - camPos[2]) ** 2; return dv - du; });
+    for (const g of glass) { setMat(g.pt.mat, g.sel); drawMesh(g.pt.mesh, g.M, P); }
+    // 레이저 빔
+    if (fired) {
+      const el = beamT0 === null ? 1e6 : (performance.now() - beamT0) / 1000;
+      const lits = [];
+      const segs = ev.sim.segs.map(s => ({ x1: s[0] - 2.5, z1: s[1] - 2.5, x2: s[2] - 2.5, z2: s[3] - 2.5, d: s[4] }));
+      for (const t of toks) if (t.type === 'T' && t.cell != null && ev.sim.lit.has(t.cell)) {
+        const kd = ((t.o % 4) + 4) % 4, td = (kd + 2) % 4, p = cellPos(t.cell);
+        segs.push({ x1: p[0] + DX[td] * .5, z1: p[1] + DY[td] * .5, x2: p[0] + DX[td] * .33, z2: p[1] + DY[td] * .33, d: 99 });
+        lits.push([p[0] + DX[td] * .33, p[1] + DY[td] * .33]);
+      }
+      const prog = d => d === 99 ? Math.min(1, Math.max(0, (el - .9) / .15)) : Math.min(1, Math.max(0, (el - d * .13) / .13));
+      gl.disable(gl.BLEND); gl.depthMask(true);
+      const live = [];
+      for (const s of segs) { const pr = d => prog(d), p = pr(s.d); if (p <= 0) continue; live.push({ x1: s.x1, z1: s.z1, x2: s.x1 + (s.x2 - s.x1) * p, z2: s.z1 + (s.z2 - s.z1) * p }); }
+      setMat({ mode: 3, color: [1, .2, .2], alpha: 1, spec: 0, shin: 1, emis: [.1, 0, 0] });
+      for (const s of live) { if (Math.hypot(s.x2 - s.x1, s.z2 - s.z1) < 1e-4) continue; gl.uniformMatrix4fv(P.u.uM, false, segMatrix(s.x1, s.z1, s.x2, s.z2, .028, BEAM_Y)); gl.bindVertexArray(cylMesh.vao); gl.drawElements(gl.TRIANGLES, cylMesh.n, gl.UNSIGNED_INT, 0); }
+      setMat({ mode: 3, color: [1, 1, 1], alpha: 1, spec: 0, shin: 1, emis: ZERO });
+      for (const s of live) { if (Math.hypot(s.x2 - s.x1, s.z2 - s.z1) < 1e-4) continue; gl.uniformMatrix4fv(P.u.uM, false, segMatrix(s.x1, s.z1, s.x2, s.z2, .011, BEAM_Y)); gl.bindVertexArray(cylMesh.vao); gl.drawElements(gl.TRIANGLES, cylMesh.n, gl.UNSIGNED_INT, 0); }
+      gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
+      setMat({ mode: 3, color: [1, .12, .08], alpha: .3, spec: 0, shin: 1, emis: ZERO });
+      for (const s of live) { if (Math.hypot(s.x2 - s.x1, s.z2 - s.z1) < 1e-4) continue; gl.uniformMatrix4fv(P.u.uM, false, segMatrix(s.x1, s.z1, s.x2, s.z2, .085, BEAM_Y)); gl.bindVertexArray(cylMesh.vao); gl.drawElements(gl.TRIANGLES, cylMesh.n, gl.UNSIGNED_INT, 0); }
+      if (el > 1.0) for (const l of lits) { setMat({ mode: 3, color: [1, .35, .2], alpha: .35 * pulse, spec: 0, shin: 1, emis: ZERO }); const M = m4.trs(l[0], BEAM_Y, l[1], 0, .3); drawMesh(sphereMesh, M, P); }
+    }
+    gl.depthMask(true); gl.disable(gl.BLEND);
+    updateOverlay(ev, fired);
+  }
+  /* 토큰 위 배지(HTML) */
+  function updateOverlay(ev, fired) {
+    const rect = canvas.getBoundingClientRect(), cw = canvas.clientWidth, ch = canvas.clientHeight;
+    for (const t of S.toks) {
+      const a = anims[t.id], e = badges[t.id]; if (!a || !e) continue;
+      const top = xf(VP, [a.x, a.y + 1.12, a.z]), nm = xf(VP, [a.x, a.y + .05, a.z + .52]);
+      const px = (top[0] * .5 + .5) * cw, py = (-top[1] * .5 + .5) * ch, nx = (nm[0] * .5 + .5) * cw, ny = (-nm[1] * .5 + .5) * ch;
+      const tp = e.firstChild, nu = e.lastChild;
+      tp.style.transform = `translate(${px}px,${py}px) translate(-50%,-100%)`; nu.style.transform = `translate(${nx}px,${ny}px) translate(-50%,-50%)`;
+      tp.children[0].style.display = t.rot ? '' : 'none'; tp.children[1].style.display = t.must ? '' : 'none';
+      const miss = fired && t.cell != null && t.type !== 'B' && !ev.sim.touched.has(t.cell);
+      tp.children[2].style.display = miss ? '' : 'none';
+      nu.textContent = t.cell != null ? t.cell : ''; nu.style.display = t.cell != null ? '' : 'none';
+    }
+  }
+  requestAnimationFrame(frame);
+
+  return {
+    sync,
+    project(x, y, z) { const q = xf(VP, [x, y, z]), r = canvas.getBoundingClientRect(); return [r.left + (q[0] * .5 + .5) * r.width, r.top + (-q[1] * .5 + .5) * r.height]; },
+    setView(name) {
+      const v = { iso: [0, 52], top: [0, 88], low: [0, 26] }[name] || [0, 52];
+      cam.tphi = v[0] * D2R; cam.ttheta = v[1] * D2R; cam.tzoom = 1;
+    }
+  };
+}
+global.View3D = { create };
+})(window);
+
+</script>
+<script>
+(function(){
+'use strict';
+const NS='http://www.w3.org/2000/svg';
+const COL={L:'#d93a32',T:'#6a56b8',S:'#3f9d45',M:'#2f84d6',K:'#f2b632',B:'#4b4f5a'};
+const $=id=>document.getElementById(id);
+const svg=$('board');
+
+/* ---------- 토큰 그림 (100×100 상자, 기본 방향) ---------- */
+function body(type){return `<rect class="body" x="7" y="7" width="86" height="86" rx="13" fill="${COL[type]}" stroke="rgba(0,0,0,.38)" stroke-width="3"/>`}
+function shape(type){
+  switch(type){
+    case 'L': return body('L')+`<circle cx="50" cy="57" r="19" fill="#8f1d18" stroke="#fff" stroke-width="4"/><circle cx="50" cy="57" r="6" fill="#fff"/><path d="M50 11 L35 34 H65 Z" fill="#fff"/>`;
+    case 'T': return body('T')+`<g clip-path="url(#cb)"><polygon points="0,0 0,100 100,100" fill="#33276f"/></g>
+      <line x1="11" y1="11" x2="89" y2="89" stroke="#7c86a0" stroke-width="12" stroke-linecap="round"/><line x1="11" y1="11" x2="89" y2="89" stroke="#eef3fb" stroke-width="8" stroke-linecap="round"/>
+      <g class="tgt"><circle class="halo" cx="50" cy="84" r="16" fill="#ffe14a"/><circle cx="50" cy="84" r="9" fill="#ff3b3b" stroke="#fff" stroke-width="3"/><circle cx="50" cy="84" r="3" fill="#fff"/></g>`;
+    case 'S': return body('S')+`<line x1="11" y1="11" x2="89" y2="89" stroke="#d9ffd6" stroke-width="13" stroke-linecap="round" opacity=".6"/><line x1="11" y1="11" x2="89" y2="89" stroke="#fff" stroke-width="3" stroke-dasharray="7 5"/>`;
+    case 'M': return body('M')+`<line x1="11" y1="11" x2="89" y2="89" stroke="#173c66" stroke-width="14" stroke-linecap="round"/><line x1="11" y1="11" x2="89" y2="89" stroke="#eef3fb" stroke-width="8" stroke-linecap="round"/>`;
+    case 'K': return body('K')+`<rect x="13" y="38" width="74" height="24" rx="12" fill="#fff6cf" stroke="#9b6c00" stroke-width="3"/><line x1="22" y1="50" x2="78" y2="50" stroke="#c9a23a" stroke-width="3" stroke-dasharray="3 6" stroke-linecap="round"/>`;
+    case 'B': return body('B')+`<rect x="24" y="24" width="52" height="52" rx="8" fill="none" stroke="#9aa0ad" stroke-width="3" stroke-dasharray="10 8"/>`;
+  }
+}
+function badges(t){
+  let s='';
+  if(t.rot) s+=`<g><circle cx="80" cy="20" r="12" fill="#fff" stroke="#0007" stroke-width="2"/><text x="80" y="27" text-anchor="middle" font-size="19" font-weight="800" fill="#333">↻</text></g>`;
+  if(t.must) s+=`<g><circle cx="80" cy="80" r="12" fill="#e53935" stroke="#fff" stroke-width="3"/><circle cx="80" cy="80" r="5" fill="none" stroke="#fff" stroke-width="3"/></g>`;
+  return s;
+}
+function mini(type,o){return `<svg viewBox="0 0 100 100"><g style="transform:rotate(${(o||0)*90}deg);transform-origin:50px 50px">${shape(type)}</g></svg>`}
+
+/* ---------- 상태 ---------- */
+let curEv=null,V3=null,pIdx=0,toks=[],fired=false,selected=null,wonShown=false,winTimer=null,drag=null,els={},layers={};
+let solved={};try{solved=JSON.parse(localStorage.getItem('laserMaze.solved')||'{}')}catch(e){}
+const P=()=>PUZZLES[pIdx];
+const cx=cell=>30+((cell-1)%5)*100, cy=cell=>30+Math.floor((cell-1)/5)*100;
+
+/* ---------- 화면 구성 ---------- */
+function buildBoard(){
+  let h=`<defs><clipPath id="cb"><rect x="7" y="7" width="86" height="86" rx="13"/></clipPath>
+    <linearGradient id="fr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#26364f"/><stop offset="1" stop-color="#18253a"/></linearGradient></defs>
+    <rect x="0" y="0" width="560" height="560" rx="30" fill="url(#fr)"/>
+    <rect x="18" y="18" width="524" height="524" rx="20" fill="#0f1a2c"/>`;
+  for(let c=1;c<=25;c++) h+=`<rect class="cell" data-c="${c}" x="${cx(c)+3}" y="${cy(c)+3}" width="94" height="94" rx="12" fill="#e9eef5"/>`;
+  h+=`<rect x="0" y="582" width="560" height="160" rx="24" fill="#16233a"/>
+    <text x="24" y="612" font-size="19" font-weight="800" fill="#9fb2d0">추가할 토큰</text>
+    <text id="trayEmpty" x="280" y="680" text-anchor="middle" font-size="20" font-weight="700" fill="#5b6b88" display="none">모두 놓았어요 ✔</text>
+    <g id="tokLayer"></g><g id="beamLayer" class="beam"></g><g id="numLayer" style="pointer-events:none"></g>`;
+  svg.innerHTML=h;
+  layers.tok=$('tokLayer');layers.beam=$('beamLayer');
+  let nums='';for(let c=1;c<=25;c++) nums+=`<text x="${cx(c)+11}" y="${cy(c)+23}" font-size="16" font-weight="800" fill="#46536b" stroke="#fff" stroke-width="3.5" paint-order="stroke" opacity=".85">${c}</text>`;
+  $('numLayer').innerHTML=nums;
+  els={};
+  toks.forEach(t=>{
+    const g=document.createElementNS(NS,'g');
+    g.setAttribute('class','tok'+(t.rot||!t.fixedPos?'':' fixedtok'));g.dataset.id=t.id;
+    g.innerHTML=`<g class="rotor">${shape(t.type)}</g><g>${badges(t)}</g>`;
+    layers.tok.appendChild(g);els[t.id]=g;
+  });
+}
+
+function loadPuzzle(i){
+  pIdx=i;toks=makeTokens(P());fired=false;selected=null;wonShown=false;clearTimeout(winTimer);
+  $('winOv').classList.remove('on');
+  buildBoard();
+  $('tabs').querySelectorAll('.tab').forEach((b,k)=>{b.classList.toggle('on',k===i)});
+  const p=P();
+  $('goal').innerHTML=`🎯 레이저가 <span>타겟 ${p.targets}개</span>에 닿게 만드세요`;
+  $('secret').hidden=!p.secret;
+  update();
+}
+function buildTabs(){
+  $('tabs').innerHTML=PUZZLES.map((p,i)=>`<button class="tab${solved[p.id]?' done':''}" data-i="${i}">${p.name}</button>`).join('');
+}
+$('tabs').addEventListener('click',e=>{const b=e.target.closest('.tab');if(b)loadPuzzle(+b.dataset.i)});
+
+/* ---------- 갱신 ---------- */
+function update(anim){
+  const p=P(),tray=toks.filter(t=>t.cell==null);
+  toks.forEach(t=>{
+    const el=els[t.id];
+    if(!(drag&&drag.moved&&drag.id===t.id)){
+      const x=t.cell!=null?cx(t.cell):30+tray.indexOf(t)*110, y=t.cell!=null?cy(t.cell):626;
+      el.style.transform=`translate(${x}px,${y}px)`;
+    }
+    el.firstChild.style.transform=`rotate(${t.o*90}deg)`;
+    el.classList.toggle('sel',selected===t.id);
+  });
+  $('trayEmpty').setAttribute('display',tray.length?'none':'inline');
+  svg.querySelectorAll('.cell').forEach(c=>c.classList.toggle('hint',!!selected&&!toks.some(t=>t.cell===+c.dataset.c)));
+
+  const ev=evaluate(p,toks);curEv=ev;
+  const showBeam=fired&&ev.sim.hasLaser;
+  // 빔
+  let g='',cores='',w='';
+  if(showBeam){
+    const s=ev.sim.segs;
+    s.forEach(([x1,y1,x2,y2,d])=>{
+      const a=`x1="${30+x1*100}" y1="${30+y1*100}" x2="${30+x2*100}" y2="${30+y2*100}" style="--len:${Math.hypot(x2-x1,y2-y1)*100};--dl:${(d*.13).toFixed(2)}s"`;
+      g+=`<line class="g" ${a}/>`;cores+=`<line class="c" ${a}/>`;w+=`<line class="w" ${a}/>`;
+    });
+  }
+  layers.beam.innerHTML=g+cores+w;
+  layers.beam.setAttribute('class','beam'+(anim?' anim':''));
+  // 토큰 상태 표시
+  toks.forEach(t=>{
+    const el=els[t.id];
+    el.classList.toggle('lit',showBeam&&t.cell!=null&&ev.sim.lit.has(t.cell));
+    el.classList.toggle('miss',showBeam&&t.cell!=null&&t.type!=='B'&&!ev.sim.touched.has(t.cell));
+  });
+  // 패널
+  const addTot=toks.filter(t=>!t.fixedPos).length, addPl=toks.filter(t=>!t.fixedPos&&t.cell!=null).length;
+  let chips=`<span class="chip${addPl===addTot?' ok':''}">🧩 추가 토큰 ${addPl}/${addTot}</span>`;
+  if(showBeam){
+    chips+=`<span class="chip${ev.litN===p.targets?' ok':''}">🎯 타겟 ${ev.litN}/${p.targets}</span>`;
+    chips+=`<span class="chip${ev.touchedN===ev.needN?' ok':''}">✅ 지나간 토큰 ${ev.touchedN}/${ev.needN}</span>`;
+  }
+  $('chips').innerHTML=chips;
+  let msg='',bad=false;
+  if(!ev.placed) msg=`추가 토큰을 모두 격자에 놓아 보세요.`;
+  else if(!fired) msg=`준비가 되면 🔦 레이저를 발사해 보세요!`;
+  else if(!ev.sim.hasLaser) msg=`레이저 토큰이 격자에 없어요.`;
+  else if(ev.ok) msg=`성공! 레이저가 모든 토큰을 지나 타겟에 닿았어요.`;
+  else{
+    bad=true;
+    if(ev.touchedN<ev.needN) msg=`노란 점선 토큰에는 아직 빔이 닿지 않았어요.`;
+    else if(!ev.mustOk) msg=`빨간 ◎ 표시 토큰의 타겟(빨간 점)에 빔이 닿아야 해요.`;
+    else if(ev.litN<p.targets) msg=`타겟에 닿은 빔이 더 필요해요.`;
+    else msg=`닿은 타겟이 정해진 수보다 많아요.`;
+  }
+  $('msg').textContent=msg;$('msg').className='msg'+(bad?' bad':'');
+  $('fire').textContent=fired?'⏹ 레이저 끄기':'🔦 레이저 발사';
+  $('fire').classList.toggle('off',fired);
+  const got=fired&&ev.ok;
+  $('code').classList.toggle('got',got);
+  $('codeNum').textContent=got?ev.code:'????';
+  $('codeF').textContent=got?toks.map(t=>t.cell).sort((a,b)=>a-b).join(' + '):'성공하면 암호가 나타나요';
+  // 성공 연출
+  if(got&&!wonShown){
+    wonShown=true;
+    winTimer=setTimeout(()=>{
+      $('winCode').textContent=ev.code;
+      $('winSum').textContent=toks.map(t=>t.cell).sort((a,b)=>a-b).join(' + ')+' = '+(+ev.code);
+      $('winWarn').hidden=!p.secret;
+      $('winNext').style.display=pIdx<PUZZLES.length-1?'':'none';
+      $('winOv').classList.add('on');
+      solved[p.id]=1;try{localStorage.setItem('laserMaze.solved',JSON.stringify(solved))}catch(e){}
+      const cur=pIdx;buildTabs();$('tabs').querySelectorAll('.tab')[cur].classList.add('on');
+    },(Math.max(...ev.sim.segs.map(s=>s[4]))+1)*130+500);
+  }else if(!got){wonShown=false;clearTimeout(winTimer);$('winOv').classList.remove('on')}
+  if(V3)V3.sync(anim);
+}
+
+/* ---------- 조작 ---------- */
+function pt(e){const p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;const q=p.matrixTransform(svg.getScreenCTM().inverse());return{x:q.x,y:q.y}}
+function cellAt(q){const c=Math.floor((q.x-30)/100),r=Math.floor((q.y-30)/100);return(c>=0&&c<5&&r>=0&&r<5)?r*5+c+1:null}
+const tokAt=c=>toks.find(t=>t.cell===c);
+const byId=id=>toks.find(t=>t.id===id);
+function toast(s){const t=$('toast');t.textContent=s;t.classList.add('on');clearTimeout(toast.k);toast.k=setTimeout(()=>t.classList.remove('on'),1800)}
+
+svg.addEventListener('pointerdown',e=>{
+  const g=e.target.closest('.tok'),q=pt(e);
+  drag={id:g?g.dataset.id:null,sx:q.x,sy:q.y,moved:false,from:g?byId(g.dataset.id).cell:null};
+  try{svg.setPointerCapture(e.pointerId)}catch(_){}
+});
+svg.addEventListener('pointermove',e=>{
+  if(!drag||!drag.id)return;
+  const q=pt(e),t=byId(drag.id);
+  if(!drag.moved&&Math.hypot(q.x-drag.sx,q.y-drag.sy)>12&&!t.fixedPos){
+    drag.moved=true;const el=els[t.id];el.classList.add('dragging');layers.tok.appendChild(el);
+  }
+  if(drag.moved) els[t.id].style.transform=`translate(${q.x-50}px,${q.y-50}px)`;
+});
+svg.addEventListener('pointerup',e=>{
+  if(!drag)return;
+  const q=pt(e),d=drag;drag=null;
+  if(d.id){
+    const t=byId(d.id),el=els[t.id];el.classList.remove('dragging');
+    if(d.moved){
+      const c=cellAt(q),occ=c&&tokAt(c)&&tokAt(c)!==t;
+      if(c&&!occ){t.cell=c;selected=null}
+      else if(!c&&q.y>575){t.cell=null;selected=null}   // 트레이로 되돌리기
+      // 그 밖(다른 토큰 위/격자 바깥)은 원래 자리로
+    }else{
+      if(t.cell==null) selected=(selected===t.id?null:t.id);
+      else if(t.rot){t.o++;selected=null}
+      else{toast('이 토큰은 돌릴 수 없어요 🔒')}
+    }
+  }else{
+    const c=cellAt(q);
+    if(c&&selected&&!tokAt(c)){byId(selected).cell=c;selected=null}
+    else selected=null;
+  }
+  update();
+});
+svg.addEventListener('pointercancel',()=>{if(drag&&drag.id)els[drag.id].classList.remove('dragging');drag=null;update()});
+
+$('fire').addEventListener('click',()=>{
+  if(!fired){
+    if(!toks.some(t=>t.type==='L'&&t.cell!=null)){toast('먼저 레이저 토큰을 격자에 놓아 주세요');return}
+    fired=true;update(true);
+  }else{fired=false;update()}
+});
+$('reset').addEventListener('click',()=>loadPuzzle(pIdx));
+$('winClose').addEventListener('click',()=>$('winOv').classList.remove('on'));
+$('winNext').addEventListener('click',()=>loadPuzzle(Math.min(pIdx+1,PUZZLES.length-1)));
+
+/* ---------- 설명 ---------- */
+$('legend').innerHTML=[
+  ['L',0,'레이저','버튼(🔦)을 누르면 화살표 방향으로 빔이 나가요.'],
+  ['T',0,'타겟 / 거울','은색 면은 거울, 빨간 점은 타겟이에요. 뒷면(어두운 쪽)은 빔을 막아요.'],
+  ['S',0,'빔 스플리터','빔을 둘로 나눠요: 반은 반사, 반은 통과.'],
+  ['M',0,'양면 거울','양쪽 면 모두 빔을 90° 반사해요.'],
+  ['K',0,'체크포인트','구멍이 난 방향으로 빔이 지나가야 해요. 옆에서 오면 막혀요.'],
+  ['B',0,'셀 차단기','다른 토큰을 놓을 수 없는 칸이에요. 빔은 그냥 통과해요.']
+].map(([t,o,n,d])=>`<div class="lg">${mini(t,o)}<div><b>${n}</b>${d}</div></div>`).join('');
+
+/* ---------- 3D 연결 ---------- */
+const api3={
+  state:()=>({toks,fired,selected,ev:curEv}),
+  tapToken(id){const t=byId(id);if(t.cell==null)selected=(selected===t.id?null:t.id);else if(t.rot){t.o++;selected=null}else toast('이 토큰은 돌릴 수 없어요 🔒');update()},
+  place(id,c){const t=byId(id);t.cell=c;selected=null;update()},
+  toTray(id){const t=byId(id);t.cell=null;selected=null;update()},
+  tapCell(c){if(c&&selected&&!tokAt(c)){byId(selected).cell=c;selected=null}else selected=null;update()},
+  refresh(){update()}
+};
+let mode3d=true;const CAMS=[['iso','기본'],['top','위에서'],['low','낮게']];let camI=0;
+try{V3=View3D.create($('gl'),$('ov'),api3)}catch(err){console.error(err);V3=null}
+function setMode(m){
+  mode3d=m&&!!V3;
+  $('wrap3d').classList.toggle('hide',!mode3d);$('board').classList.toggle('hide',mode3d);
+  $('vCam').classList.toggle('hide',!mode3d);
+  $('vMode').textContent=mode3d?'🗺 2D로 보기':'🧊 3D로 보기';
+  $('vMode').classList.toggle('hide',!V3);
+}
+$('vMode').addEventListener('click',()=>setMode(!mode3d));
+$('vCam').addEventListener('click',()=>{camI=(camI+1)%CAMS.length;V3.setView(CAMS[camI][0]);$('vCam').textContent='🎥 시점: '+CAMS[camI][1]});
+if(!V3)toast('이 기기는 3D를 지원하지 않아 2D로 보여줘요');
+
+setMode(true);
+buildTabs();loadPuzzle(0);
+})();
+</script>
+</body>
+</html>
