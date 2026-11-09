@@ -56,7 +56,7 @@ h1 small{font-weight:500;color:var(--mut);font-size:13px;margin-left:6px}
 .win .sum{font-size:14px;color:var(--mut);margin-bottom:10px;word-break:keep-all}
 .win .warn{font-size:14px;color:#ffb3b3;margin-bottom:12px}
 .win .row{display:flex;gap:8px}
-#wrap3d{position:relative;width:100%;height:min(80dvh,148vw);min-height:360px;border-radius:18px;overflow:hidden;background:#0f1a2c}
+#wrap3d{position:relative;width:100%;height:calc(100dvh - 96px);min-height:420px;border-radius:18px;overflow:hidden;background:#0f1a2c}
 #gl{position:absolute;inset:0;width:100%;height:100%;touch-action:none;display:block}
 #ov{position:absolute;inset:0;pointer-events:none;overflow:hidden}
 .ob .top,.ob .num{position:absolute;left:0;top:0;will-change:transform}
@@ -80,7 +80,7 @@ h1 small{font-weight:500;color:var(--mut);font-size:13px;margin-left:6px}
 #codeIn.bad{border-color:#ff6b6b;animation:shake .35s}
 @keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
 .codebox .btn{padding:12px 14px;font-size:15px}
-.cmsg{font-size:13px;color:var(--mut);min-height:18px;margin:6px 2px 0}
+.cmsg{word-break:keep-all;font-size:15px;color:var(--mut);min-height:18px;margin:6px 2px 0}
 .cmsg.bad{color:#ffb3b3}
 .secret{font-size:12px;color:#ffb3b3;margin:8px 0 0}
 .nogl{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;color:var(--mut);line-height:1.6}
@@ -97,7 +97,6 @@ h1 small{font-weight:500;color:var(--mut);font-size:13px;margin-left:6px}
   .layout{flex:1 1 auto;min-height:0;width:100%;padding:6px 10px calc(6px + env(safe-area-inset-bottom));gap:6px;
     grid-template-rows:minmax(0,1fr) auto;grid-template-areas:"stage" "ctrl"}
   .stage{min-height:0;display:flex;flex-direction:column}
-  .vbar{position:absolute;top:6px;left:6px;z-index:2;margin:0}
   .vb{padding:6px 9px;font-size:12px;background:#0f1a2ccc}
   #wrap3d{flex:1 1 auto;height:auto;min-height:0;border-radius:14px}
   .card{padding:8px 10px;border-radius:14px}
@@ -111,7 +110,7 @@ h1 small{font-weight:500;color:var(--mut);font-size:13px;margin-left:6px}
   .codebox label{font-size:12px}
   #codeIn{font-size:22px;padding:3px 2px;letter-spacing:6px}
   .codebox .btn{padding:9px 12px;font-size:14px}
-  .cmsg{font-size:11px;min-height:0;margin:4px 2px 0;line-height:1.3}
+  .cmsg{font-size:12px;min-height:0;margin:4px 2px 0;line-height:1.3}
   .secret{font-size:11px;margin:4px 0 0}
   .key{font-size:20px;min-height:0}.key.go{font-size:15px}.key.cancel{font-size:14px}
   #upper{min-height:0}
@@ -130,27 +129,155 @@ h1 small{font-weight:500;color:var(--mut);font-size:13px;margin-left:6px}
 #codeIn{cursor:pointer;caret-color:transparent}
 #codeBox.open #codeIn{border-color:var(--acc)}
 #codeLab{cursor:pointer}
+
+[hidden]{display:none!important}
+.home{min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:24px 16px}
+.hwrap{width:100%;max-width:640px;text-align:center}
+.htitle{font-size:30px;margin:0 0 28px;letter-spacing:-.5px;line-height:1.3;word-break:keep-all}
+.hbtns{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.hbtn{border:0;border-radius:20px;padding:48px 10px;color:#fff;font-family:inherit;font-weight:800;font-size:22px;line-height:1.2;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:12px;box-shadow:0 4px 0 rgba(0,0,0,.35)}
+.hbtn:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.35)}
+.hbtn .hic{font-size:48px;line-height:1}
+.hbtn.laser{background:#15803d}.hbtn.sky{background:#7c5cff}
+@media (max-width:520px){.htitle{font-size:24px}.hbtns{grid-template-columns:1fr}.hbtn{padding:40px 10px}}
+.nav{display:flex;gap:6px;width:100%;box-sizing:border-box;max-width:1100px;margin:0 auto;padding:10px 14px 0}
+.nav button{flex:1;white-space:nowrap;border:0;border-radius:999px;padding:10px 4px;background:var(--card2);color:var(--ink);font:700 14px/1 inherit;cursor:pointer}
+.nav button.on[data-go=laser]{background:#15803d;color:#fff}
+.nav button.on[data-go=tele]{background:#7c5cff;color:#fff}
+.view{display:block}
+header h1{display:none}
+header{padding-top:8px}
+.tabs{margin-left:0;justify-content:flex-start}
+.tview{max-width:520px;margin:0 auto;padding:10px 14px 24px;display:flex;flex-direction:column;gap:10px}
+.tstage{border-radius:16px;background:#0f1a2c;min-height:340px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:16px}
+.tstage .ttl{font-size:18px;font-weight:800}
+.tstage .tsub{font-size:14px;color:var(--mut);line-height:1.5}
+.tdg{display:flex;gap:10px}
+.tdg b{width:54px;height:66px;border-radius:12px;background:#16233a;border:2px solid #2d4266;display:flex;align-items:center;justify-content:center;font:800 32px ui-monospace,Menlo,Consolas,monospace;color:#fff}
+.tdg b.cur{border-color:#7c5cff}
+.tdg.bad b{border-color:#ff6b6b}
+.tdg.bad{animation:shake .35s}
+.tbig{font:800 52px/1.1 ui-monospace,Menlo,Consolas,monospace;letter-spacing:10px;color:#7dffb0}
+.tcard{background:var(--card);border-radius:16px;padding:10px}
+.tpad{position:static;display:grid;height:116px}
+.tpad .key.go{background:#7c5cff}
+.tmsg{font-size:13px;color:#ffb3b3;min-height:18px;margin:6px 2px 0;text-align:center}
+.tcard .btn.again{width:100%;background:#7c5cff}
+@media (max-width:859px){
+  .home{min-height:0;flex:1}
+  .nav{padding:6px 10px 0;flex:0 0 auto}.nav button{padding:8px 2px;font-size:13px}
+  #vLaser{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}
+  #vLaser[hidden]{display:none!important}
+  header{padding:6px 10px 0}
+  .tview{flex:1 1 auto;min-height:0;width:100%;padding:6px 10px calc(8px + env(safe-area-inset-bottom));gap:6px}
+  .tstage{flex:1 1 auto;min-height:0;padding:8px;gap:8px}
+  .tstage svg{max-height:26vh;width:auto}
+  .tstage .ttl{font-size:16px}.tstage .tsub{font-size:12px}
+  .tdg b{width:46px;height:56px;font-size:28px}
+  .tbig{font-size:40px}
+  .tcard{padding:8px;flex:0 0 auto}
+  .tpad{height:100px}
+}
+
+.cbtn{position:absolute;top:8px;z-index:3;border:0;border-radius:10px;padding:8px 11px;background:#0f1a2ccc;color:var(--ink);font-family:inherit;font-weight:700;font-size:13px;cursor:pointer;touch-action:manipulation}
+#vCam{left:8px}.fsb{right:8px}
+.home{position:relative}.home .fsb{top:12px;right:12px}
+.tview{position:relative}.tview .fsb{top:20px;right:22px}
+.cbtn:active{transform:translateY(1px)}
+.ptabs,.xtabs{display:flex;gap:6px;margin:0 0 8px}
+.ptabs .tab{flex:1 1 0;min-width:0;white-space:nowrap;padding:10px 2px;font-size:13px}
+.xtabs .tab.mini{flex:1 1 0;min-width:0;width:auto;padding:8px 0;font-size:13px}
+.tdesc{margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px 12px;font-size:14px;color:var(--mut);line-height:1.35}
+.tdesc>div{display:flex;align-items:center;gap:8px}
+.tdesc .ti{flex:0 0 auto;display:flex;align-items:center}
+.tdesc img{width:48px;height:48px;object-fit:contain;display:block}
+.tdesc .ti img:only-child{width:56px;height:56px}
+.tdesc .ti img+img{margin-left:-14px}
+.tdesc b{display:block;color:var(--ink);font-weight:700;font-size:15px;margin-bottom:1px}
+@media (max-width:859px){
+  .tdesc{display:none}
+  .cbtn{top:6px;padding:7px 9px;font-size:12px}#vCam{left:6px}.fsb{right:6px}
+  .tview .fsb{top:12px;right:16px}
+  .ptabs,.xtabs{gap:4px;margin-bottom:5px}
+  .ptabs .tab{padding:8px 1px;font-size:12px}
+  .xtabs .tab.mini{padding:6px 0;font-size:12px}
+}
+
+/* ---- v2: 상단 버튼줄 / 높이 정렬 / 망원경 화면 ---- */
+.tbar{position:absolute;top:8px;left:8px;right:8px;display:flex;gap:8px;z-index:3;pointer-events:none}
+.tbar .cbtn{position:static;pointer-events:auto;flex:1 1 0;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:10px 6px;font-size:14px;text-align:center}
+.cbtn.fire{background:var(--acc);color:#fff;font-weight:800;box-shadow:0 2px 0 rgba(0,0,0,.35)}
+.cbtn.fire.off{background:#3b4d6d}
+.grow{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.grow .goal{flex:1;margin:0}
+.grow .btn.sub{flex:0 0 auto;padding:9px 12px;font-size:13px}
+.tstage{position:relative;overflow:hidden;background:radial-gradient(ellipse at 50% 105%,#33256b 0%,#14193b 45%,#060a18 100%);padding:0}
+.stars{position:absolute;inset:0}
+.stars i{position:absolute;border-radius:50%;display:block}
+@keyframes twk{0%,100%{opacity:.25}50%{opacity:1}}
+.tsvg{position:relative;z-index:1;width:100%;height:100%;display:flex;align-items:center;justify-content:center}
+.tsvg svg{width:560px;max-width:92%;max-height:92%;height:auto}
+.tview .fsb{top:8px;right:8px;z-index:3}
+.tinfo{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
+.tinfo .ttl{font-size:18px;font-weight:800}
+.tinfo .tsub{font-size:14px;color:var(--mut)}
+@media (min-width:860px){
+  .layout{align-items:stretch;padding-bottom:12px}
+  .stage{display:flex}
+  #wrap3d{height:auto;min-height:max(560px,calc(100dvh - 72px))}
+  .ctrl{display:flex;flex-direction:column}
+  #upper{flex:0 0 auto}
+  .tdesc{flex:1;margin-top:12px;grid-auto-rows:1fr;align-content:stretch;gap:8px 12px}
+  .tview{max-width:1100px;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(300px,.85fr);gap:12px;padding:10px 14px 12px;align-items:stretch}
+  .tstage{min-height:max(560px,calc(100dvh - 72px))}
+  .tcard{display:flex;flex-direction:column;padding:16px;gap:10px}
+  .tinfo{flex:1;justify-content:center;gap:16px}
+  .tinfo .ttl{font-size:22px}.tinfo .tsub{font-size:16px}
+  .tcard .tdg b{width:62px;height:76px;font-size:36px}
+  .tpad{height:200px;flex:0 0 auto}
+  .tmsg{min-height:20px;margin:0}
+}
+@media (max-width:859px){
+  .tbar{top:6px;left:6px;right:6px;gap:6px}
+  .tbar .cbtn{padding:8px 3px;font-size:12px}
+  .tview .fsb{top:6px;right:6px}
+  .tstage{flex:1 1 auto;min-height:0}
+  .tinfo{gap:6px}.tinfo .ttl{font-size:15px}.tinfo .tsub{font-size:12px}
+  .tcard .tdg b{width:44px;height:52px;font-size:26px}
+  .tcard{padding:8px 10px}
+  .tmsg{margin:2px 0 4px;min-height:16px}
+  .grow .btn.sub{padding:7px 10px;font-size:12px}
+}
 </style>
 </head>
 <body>
-<header>
-  <h1>🔦 레이저 메이즈<small>암호를 찾아라</small></h1>
-  <div class="tabs" id="tabs"></div>
-</header>
+<div id="home" class="home">
+  <button class="cbtn fsb" hidden>⛶ 전체화면</button>
+  <div class="hwrap">
+    <h1 class="htitle">레이저와 천체 망원경 미션</h1>
+    <div class="hbtns">
+      <button class="hbtn laser" data-go="laser"><span>레이저 미션</span></button>
+      <button class="hbtn sky" data-go="tele"><span>망원경 미션</span></button>
+    </div>
+  </div>
+</div>
+<nav class="nav" id="nav" hidden>
+  <button data-go="laser">레이저 미션</button><button data-go="tele">망원경 미션</button><button data-go="home">메인 화면</button>
+</nav>
+<div id="vLaser" class="view" hidden>
 
 <div class="layout">
   <section class="stage">
-    <div class="vbar"><button class="vb" id="vCam">🎥 시점: 기본</button></div>
-    <div id="wrap3d"><canvas id="gl"></canvas><div id="ov"></div></div>
+    <div id="wrap3d"><canvas id="gl"></canvas><div id="ov"></div>
+      <div class="tbar"><button class="cbtn" id="vCam">🎥 시점 초기화</button><button class="cbtn fire" id="fire">🔦 레이저 발사</button><button class="cbtn fsb" hidden>⛶ 전체화면</button></div>
+    </div>
   </section>
 
   <section class="ctrl card">
     <div id="upper">
-    <p class="goal" id="goal"></p>
-    <div class="btns">
-      <button class="btn" id="fire">🔦 레이저 발사</button>
-      <button class="btn sub" id="reset">↺ 처음부터</button>
-    </div>
+    <div class="ptabs" id="ptabs"></div>
+    <div class="xtabs" id="xtabs" hidden></div>
+    <div class="grow"><p class="goal" id="goal"></p><button class="btn sub" id="reset">↺ 처음부터</button></div>
     <div class="chips" id="chips"></div>
     <div class="msg" id="msg"></div>
     <div class="pad" id="pad">
@@ -162,8 +289,31 @@ h1 small{font-weight:500;color:var(--mut);font-size:13px;margin-left:6px}
     </div>
     <div class="codebox" id="codeBox"><label id="codeLab">🔐 암호</label><input id="codeIn" readonly inputmode="none" tabindex="-1" maxlength="4" autocomplete="off" placeholder="0000"><button class="btn sub" id="codeDel" aria-label="지우기">⌫</button></div>
     <div class="cmsg" id="cmsg">토큰이 놓인 칸 번호를 모두 더해 4자리로 입력해요 (예: 7 → 0007)</div>
+    <div class="tdesc" id="tdesc">
+      <div><span class="ti"><img data-ic="L,2" alt=""></span><span><b>레이저</b>한 방향으로 빛을 쏘아요</span></div>
+      <div><span class="ti"><img data-ic="T,2" alt=""><img data-ic="T,0" alt=""></span><span><b>타겟·거울</b>한쪽 면은 거울, 반대쪽 면은 빛을 받는 타겟</span></div>
+      <div><span class="ti"><img data-ic="S,0" alt=""></span><span><b>빔 스플리터</b>빛의 일부는 통과하고 일부는 반사해요</span></div>
+      <div><span class="ti"><img data-ic="M,0" alt=""></span><span><b>양면 거울</b>양쪽 면 모두 빛을 반사해요</span></div>
+      <div><span class="ti"><img data-ic="K,0" alt=""></span><span><b>체크포인트</b>한 방향으로만 빛이 지나가요</span></div>
+      <div><span class="ti"><img data-ic="B,0" alt=""></span><span><b>셀 차단기</b>빛은 통과하고 칸만 차지해요</span></div>
+    </div>
     <p class="secret" id="secret" hidden>🤫 암호는 다른 모둠에게 절대 알려주지 않기!</p>
   </section>
+</div>
+</div>
+
+<div id="vTele" class="view tview" hidden>
+  <div class="tstage" id="tStage"><div class="stars" id="stars"></div><div class="tsvg" id="tSvg"></div><button class="cbtn fsb" hidden>⛶ 전체화면</button></div>
+  <div class="tcard" id="tCard">
+    <div class="tinfo" id="tInfo"></div>
+    <div class="tmsg" id="tMsg"></div>
+    <div class="pad tpad" id="tPad">
+      <button class="key" data-k="1">1</button><button class="key" data-k="2">2</button><button class="key" data-k="3">3</button><button class="key" data-k="4">4</button><button class="key" data-k="5">5</button>
+      <button class="key go" id="tGo">입력</button>
+      <button class="key" data-k="6">6</button><button class="key" data-k="7">7</button><button class="key" data-k="8">8</button><button class="key" data-k="9">9</button><button class="key" data-k="0">0</button>
+      <button class="key cancel" id="tCx">취소</button>
+    </div>
+  </div>
 </div>
 
 <div class="overlay" id="winOv">
@@ -540,8 +690,9 @@ const C = { L: hex('#dc2a21'), T: hex('#6b34b8'), S: hex('#6cc41c'), M: hex('#1a
 const mat = (c, o) => Object.assign({ mode: 0, color: c, alpha: 1, spec: .45, shin: 40, emis: [0, 0, 0] }, o || {});
 
 /* ======================================================= */
-function create(canvas, overlay, api) {
-  const gl = canvas.getContext('webgl2', { antialias: true, alpha: false, powerPreference: 'high-performance' });
+function create(canvas, overlay, api, opts) {
+  opts = opts || {};
+  const gl = canvas.getContext('webgl2', opts.icons ? { antialias: true, alpha: true, premultipliedAlpha: true, preserveDrawingBuffer: true } : { antialias: true, alpha: false, powerPreference: 'high-performance' });
   if (!gl) return null;
 
   /* --- 프로그램 --- */
@@ -704,8 +855,8 @@ function create(canvas, overlay, api) {
   /* =========== 상태 =========== */
   const BEAM_Y = .47, TOPY = 0, TABLEY = -.5;
   let S = { toks: null }, anims = {}, badges = {}, beamT0 = null, drag = null, hoverCell = null;
-  const cam = { phi: 0, theta: 52 * D2R, zoom: 1, tphi: 0, ttheta: 52 * D2R, tzoom: 1 };
-  const tgt = [0, 0, 0.5];
+  const THETA = 70 * D2R, cam = { phi: 0, theta: THETA, zoom: 1, tphi: 0, ttheta: THETA, tzoom: 1 };
+  const tgt = [0, 0, 0.8];
   const cellPos = c => [((c - 1) % 5) - 2, Math.floor((c - 1) / 5) - 2];
   function slotPos(t, toks) {
     const added = toks.filter(x => !x.fixedPos), i = added.indexOf(t), n = added.length;
@@ -727,19 +878,34 @@ function create(canvas, overlay, api) {
 
   /* =========== 카메라 =========== */
   let VP = m4.id(), camPos = [0, 8, 8], W = 1, H = 1, dpr = 1;
-  function camMatrix(dist, aspect) {
-    const e = [tgt[0] + dist * Math.sin(cam.phi) * Math.cos(cam.theta), tgt[1] + dist * Math.sin(cam.theta), tgt[2] + dist * Math.cos(cam.phi) * Math.cos(cam.theta)];
+  function camMatrix(dist, aspect, phi = cam.phi) {
+    const e = [tgt[0] + dist * Math.sin(phi) * Math.cos(cam.theta), tgt[1] + dist * Math.sin(cam.theta), tgt[2] + dist * Math.cos(phi) * Math.cos(cam.theta)];
     return { e, vp: m4.mul(m4.persp(38 * D2R, aspect, .5, 90), m4.look(e, tgt, [0, 1, 0])) };
   }
   const FIT = []; for (const x of [-3.3, 3.3]) for (const z of [-3.3, 4.9]) for (const y of [-.5, 1.1]) FIT.push([x, y, z]);
-  function fitDist(aspect) {
+  function fitDist(aspect, phi) {
     let lo = 4, hi = 90;
     for (let i = 0; i < 16; i++) {
-      const mid = (lo + hi) / 2, { vp } = camMatrix(mid, aspect);
+      const mid = (lo + hi) / 2, { vp } = camMatrix(mid, aspect, phi);
       const ok = FIT.every(p => { const q = xf(vp, p); return Math.abs(q[0]) < .97 && Math.abs(q[1]) < .97; });
       if (ok) hi = mid; else lo = mid;
     }
     return hi;
+  }
+  /* 정면(phi=0)에서 보드판+추가 토큰 칸이 여백 없이 꽉 차게, 가운데에 오도록 한 번 계산 (회전해도 같은 값 사용) */
+  const BLOCK = []; for (const x of [-3.3, 3.3]) for (const y of [-.5, 0]) for (const z of [-3.3, 3.3]) BLOCK.push([x, y, z]); for (const x of [-3.3, 3.3]) BLOCK.push([x, -.5, 4.9]);
+  let layoutCache = { key: '' };
+  function layoutFor(aspect, ch) {
+    const key = aspect + '|' + ch; if (layoutCache.key === key) return layoutCache;
+    const topN = 1 - 2 * 40 / ch, botN = -.985, R = topN - botN;   // 위쪽 40px는 버튼 자리
+    const box = vp => { let x0 = 9, x1 = -9, y0 = 9, y1 = -9; for (const p of BLOCK) { const q = xf(vp, p); x0 = Math.min(x0, q[0]); x1 = Math.max(x1, q[0]); y0 = Math.min(y0, q[1]); y1 = Math.max(y1, q[1]); } return [x0, x1, y0, y1]; };
+    let lo = 4, hi = 90;
+    for (let i = 0; i < 20; i++) {
+      const mid = (lo + hi) / 2, [x0, x1, y0, y1] = box(camMatrix(mid, aspect, 0).vp);
+      if (x1 - x0 <= 1.97 && y1 - y0 <= R) hi = mid; else lo = mid;
+    }
+    const [x0, x1, y0, y1] = box(camMatrix(hi, aspect, 0).vp);
+    return layoutCache = { key, dist: hi, sx: -(x0 + x1) / 2, sy: (topN + botN) / 2 - (y0 + y1) / 2 };
   }
   function ray(px, py) {
     const rect = canvas.getBoundingClientRect(), nx = (px - rect.left) / rect.width * 2 - 1, ny = -((py - rect.top) / rect.height * 2 - 1), inv = m4.inv(VP);
@@ -772,7 +938,7 @@ function create(canvas, overlay, api) {
   });
   canvas.addEventListener('pointermove', e => {
     if (!ptrs.has(e.pointerId)) return; ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    if (ptrs.size === 2) { const [a, b] = [...ptrs.values()], d = Math.hypot(a.x - b.x, a.y - b.y); if (pinch0 > 0) { cam.tzoom = Math.min(1.3, Math.max(.45, cam.tzoom * pinch0 / d)); cam.zoom = cam.tzoom; } pinch0 = d; return; }
+    if (ptrs.size === 2) return;
     if (!gest) return;
     const dx = e.clientX - gest.lx, dy = e.clientY - gest.ly; gest.lx = e.clientX; gest.ly = e.clientY;
     if (!gest.moved && Math.hypot(e.clientX - gest.sx, e.clientY - gest.sy) > 7) gest.moved = true;
@@ -781,7 +947,7 @@ function create(canvas, overlay, api) {
       const t = S.toks.find(x => x.id === gest.id);
       if (!t.fixedPos) { drag = { id: t.id }; const h = planeHit(ray(e.clientX, e.clientY), .6); if (h) { drag.x = h[0]; drag.z = h[2]; hoverCell = cellFrom(planeHit(ray(e.clientX, e.clientY), 0)); } }
     } else {
-      cam.tphi -= dx * .0065; cam.ttheta = Math.min(88 * D2R, Math.max(20 * D2R, cam.ttheta + dy * .0055)); cam.phi = cam.tphi; cam.theta = cam.ttheta;
+      cam.tphi -= dx * .0065; cam.phi = cam.tphi;
     }
   });
   const end = e => {
@@ -803,7 +969,6 @@ function create(canvas, overlay, api) {
     drag = null;
   };
   canvas.addEventListener('pointerup', end); canvas.addEventListener('pointercancel', e => { ptrs.delete(e.pointerId); gest = null; drag = null; });
-  canvas.addEventListener('wheel', e => { e.preventDefault(); cam.tzoom = Math.min(1.3, Math.max(.45, cam.tzoom * Math.exp(e.deltaY * .0012))); cam.zoom = cam.tzoom; }, { passive: false });
 
   /* =========== 그리기 =========== */
   function setMat(m, emisAdd) {
@@ -829,8 +994,10 @@ function create(canvas, overlay, api) {
     W = canvas.width; H = canvas.height;
     // 카메라 보간
     const k = 1 - Math.exp(-dt * 9);
-    cam.phi += (cam.tphi - cam.phi) * k; cam.theta += (cam.ttheta - cam.theta) * k; cam.zoom += (cam.tzoom - cam.zoom) * k;
-    const aspect = W / H, dist = fitDist(aspect) * cam.zoom, cm = camMatrix(dist, aspect); VP = cm.vp; camPos = cm.e;
+    cam.phi += (cam.tphi - cam.phi) * k;
+    const aspect = W / H, L = layoutFor(aspect, ch), cm = camMatrix(L.dist, aspect);
+    const shift = m4.id(); shift[12] = L.sx; shift[13] = L.sy;      // 정면 기준으로 가로·세로 가운데 맞춤
+    VP = m4.mul(shift, cm.vp); camPos = cm.e;
     // 토큰 애니메이션
     const kk = 1 - Math.exp(-dt * 13), toks = S.toks;
     for (const t of toks) {
@@ -937,14 +1104,37 @@ function create(canvas, overlay, api) {
       nu.textContent = t.cell != null ? t.cell : ''; nu.style.display = t.cell != null ? '' : 'none';
     }
   }
-  requestAnimationFrame(frame);
+  if (!opts.icons) requestAnimationFrame(frame);
+
+  /* 토큰 하나를 작은 그림(dataURL)으로 그리기 — 설명 패널용 */
+  function icon(type, o, size, phi, theta) {
+    canvas.width = canvas.height = size;
+    const tg = [0, .42, 0], dist = 2.75, ph = (phi || 0) * D2R, th = (theta || 30) * D2R;
+    const e = [tg[0] + dist * Math.sin(ph) * Math.cos(th), tg[1] + dist * Math.sin(th), tg[2] + dist * Math.cos(ph) * Math.cos(th)];
+    const vp = m4.mul(m4.persp(34 * D2R, 1, .5, 50), m4.look(e, tg, [0, 1, 0])), M = m4.trs(0, 0, 0, -o * 90 * D2R, 1);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, shFB); gl.viewport(0, 0, SH, SH); gl.clear(gl.DEPTH_BUFFER_BIT);
+    gl.useProgram(PD.p); gl.uniformMatrix4fv(PD.u.uLVP, false, lightVP); gl.enable(gl.DEPTH_TEST); gl.depthMask(true); gl.disable(gl.BLEND);
+    for (const pt of models[type]) if (pt.mat.mode !== 2) drawMesh(pt.mesh, M, PD);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.viewport(0, 0, size, size);
+    gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.useProgram(P.p);
+    gl.uniformMatrix4fv(P.u.uVP, false, vp); gl.uniformMatrix4fv(P.u.uLVP, false, lightVP); gl.uniform3fv(P.u.uCam, e); gl.uniform3fv(P.u.uLdir, LDIR);
+    gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, shTex); gl.uniform1i(P.u.uSh, 1);
+    gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, matTex); gl.uniform1i(P.u.uTex, 0); gl.uniform2f(P.u.uUVs, 1, 1);
+    const glass = [];
+    for (const pt of models[type]) { if (pt.mat.mode === 2) { glass.push(pt); continue; } setMat(pt.mat, null); drawMesh(pt.mesh, M, P); }
+    gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); gl.depthMask(false);
+    for (const pt of glass) { setMat(pt.mat, null); drawMesh(pt.mesh, M, P); }
+    gl.depthMask(true); gl.disable(gl.BLEND);
+    return canvas.toDataURL('image/png');
+  }
 
   return {
+    icon,
     sync,
     project(x, y, z) { const q = xf(VP, [x, y, z]), r = canvas.getBoundingClientRect(); return [r.left + (q[0] * .5 + .5) * r.width, r.top + (-q[1] * .5 + .5) * r.height]; },
     setView(name) {
-      const v = { iso: [0, 52], top: [0, 88], low: [0, 26] }[name] || [0, 52];
-      cam.tphi = v[0] * D2R; cam.ttheta = v[1] * D2R; cam.tzoom = 1;
+      cam.tphi = Math.round(cam.tphi / (2 * Math.PI)) * 2 * Math.PI;   // 가장 가까운 정면으로
     }
   };
 }
@@ -958,7 +1148,8 @@ global.View3D = { create };
 const $=id=>document.getElementById(id);
 let curEv=null,V3=null,pIdx=0,toks=[],fired=false,selected=null;
 let solved={};try{solved=JSON.parse(sessionStorage.getItem('laserMaze.solved')||'{}')}catch(e){}
-const unlocked=i=>i===0||!!solved[PUZZLES[i-1].id];
+const unlocked=i=>i===0||!!PUZZLES[i].extra||!!solved[PUZZLES[i-1].id];
+const FIRSTX=PUZZLES.findIndex(q=>q.extra);let extraOpen=false;
 const P=()=>PUZZLES[pIdx];
 const byId=id=>toks.find(t=>t.id===id), tokAt=c=>toks.find(t=>t.cell===c);
 function toast(s){const t=$('toast');t.textContent=s;t.classList.add('on');clearTimeout(toast.k);toast.k=setTimeout(()=>t.classList.remove('on'),1800)}
@@ -966,19 +1157,23 @@ const CMSG0='토큰이 놓인 칸 번호를 모두 더해 4자리로 입력해�
 function cmsg(s,bad){const m=$('cmsg');m.textContent=s;m.className='cmsg'+(bad?' bad':'')}
 
 function buildTabs(){
-  const tab=(p,i,mini)=>`<button class="tab${mini?' mini':''}${solved[p.id]?' done':''}${i===pIdx?' on':''}${unlocked(i)?'':' lock'}" data-i="${i}" title="${p.name}">${unlocked(i)||mini?'':'🔒 '}${mini?(i-PUZZLES.findIndex(q=>q.extra)+1):p.name}</button>`;
-  const main=PUZZLES.map((p,i)=>p.extra?'':tab(p,i,false)).join('');
-  const ext=PUZZLES.map((p,i)=>p.extra?tab(p,i,true):'').join('');
-  $('tabs').innerHTML=main+(ext?`<span class="grp"><b>추가 문제</b>${ext}</span>`:'');
+  const tab=(p,i,mini)=>`<button class="tab${mini?' mini':''}${solved[p.id]?' done':''}${i===pIdx?' on':''}${unlocked(i)?'':' lock'}" data-i="${i}" title="${p.name}">${unlocked(i)?'':'🔒 '}${mini?(i-FIRSTX+1):p.name}</button>`;
+  const onEx=!!P().extra;
+  $('ptabs').innerHTML=PUZZLES.map((p,i)=>p.extra?'':tab(p,i,false)).join('')+`<button class="tab${onEx?' on':''}" data-x="1">추가 미션 ${extraOpen?'▴':'▾'}</button>`;
+  $('xtabs').innerHTML=PUZZLES.map((p,i)=>p.extra?tab(p,i,true):'').join('');
+  $('xtabs').hidden=!extraOpen;
 }
-$('tabs').addEventListener('click',e=>{
-  const b=e.target.closest('.tab');if(!b)return;const i=+b.dataset.i;
+function onTabClick(e){
+  const b=e.target.closest('.tab');if(!b)return;
+  if(b.dataset.x){if(!P().extra){loadPuzzle(FIRSTX)}else{extraOpen=!extraOpen;buildTabs()}return}
+  const i=+b.dataset.i;
   if(!unlocked(i)){toast(PUZZLES[i-1].name+' 성공 후에 열려요 🔒');return}
   loadPuzzle(i);
-});
+}
+$('ptabs').addEventListener('click',onTabClick);$('xtabs').addEventListener('click',onTabClick);
 
 function loadPuzzle(i){
-  pIdx=i;toks=makeTokens(P());fired=false;selected=null;
+  pIdx=i;extraOpen=!!PUZZLES[i].extra;toks=makeTokens(P());fired=false;selected=null;
   $('winOv').classList.remove('on');$('codeIn').value='';padOpen(false);cmsg(CMSG0);
   buildTabs();
   const p=P();
@@ -1067,12 +1262,91 @@ const api3={
   tapCell(c){if(c&&selected&&!tokAt(c)){byId(selected).cell=c;selected=null}else selected=null;update()},
   refresh(){update()}
 };
-const CAMS=[['iso','기본'],['top','위에서'],['low','낮게']];let camI=0;
+
 try{V3=View3D.create($('gl'),$('ov'),api3)}catch(err){console.error(err);V3=null}
 if(!V3){$('wrap3d').insertAdjacentHTML('beforeend','<div class="nogl">이 기기·브라우저는 3D(WebGL2)를 지원하지 않아요.<br>최신 Chrome, Safari, Edge로 열어 주세요.</div>');$('vCam').classList.add('hide')}
-$('vCam').addEventListener('click',()=>{camI=(camI+1)%CAMS.length;V3.setView(CAMS[camI][0]);$('vCam').textContent='🎥 시점: '+CAMS[camI][1]});
+$('vCam').addEventListener('click',()=>V3.setView('front'));
+/* 전체화면 (아이폰 Safari는 지원하지 않아 버튼을 숨김) */
+(()=>{
+  const el=document.documentElement,req=el.requestFullscreen||el.webkitRequestFullscreen,btns=[...document.querySelectorAll('.fsb')];
+  const cur=()=>document.fullscreenElement||document.webkitFullscreenElement;
+  if(!req||/iPhone|iPod/.test(navigator.userAgent))return;
+  btns.forEach(btn=>{btn.hidden=false;btn.addEventListener('click',()=>{
+    if(cur()){(document.exitFullscreen||document.webkitExitFullscreen).call(document)}
+    else{try{const r=req.call(el);if(r&&r.catch)r.catch(()=>toast('전체화면으로 바꿀 수 없어요'))}catch(e){toast('전체화면으로 바꿀 수 없어요')}}
+  })});
+  const upd=()=>btns.forEach(b=>{b.textContent=cur()?'✕ 전체화면 해제':'⛶ 전체화면'});
+  document.addEventListener('fullscreenchange',upd);document.addEventListener('webkitfullscreenchange',upd);
+})();
+/* 토큰 설명용 3D 그림 (PC 화면에서만 만들어 둠) */
+(()=>{
+  let done=false;
+  function make(){
+    if(done||!window.matchMedia('(min-width:860px)').matches)return;done=true;
+    try{
+      const c=document.createElement('canvas'),v=View3D.create(c,document.createElement('div'),{state:()=>({toks:null})},{icons:true});
+      if(!v)return;
+      document.querySelectorAll('#tdesc img[data-ic]').forEach(im=>{const [t,o]=im.dataset.ic.split(',');im.src=v.icon(t,+o,192,-20,32)});
+      const gl=c.getContext('webgl2');if(gl){const x=gl.getExtension('WEBGL_lose_context');if(x)x.loseContext()}
+    }catch(e){console.error(e)}
+  }
+  window.addEventListener('resize',make);setTimeout(make,0);
+})();
 
-buildTabs();loadPuzzle(0);
+/* ---------- 화면 전환 (메인 / 레이저 미션 / 망원경 미션) ---------- */
+let view='home';
+function show(v){
+  view=v;
+  $('home').hidden=v!=='home';$('vLaser').hidden=v!=='laser';$('vTele').hidden=v!=='tele';$('nav').hidden=v==='home';
+  document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.go===v));
+  if(v==='laser'){padOpen(false);if(V3){V3.sync(false)}}
+  if(v==='tele')teleDraw();
+  window.scrollTo(0,0);
+}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(b)show(b.dataset.go)});
+
+/* ---------- 망원경 미션 ---------- */
+const TCODE='8127';let tv='',tbad=false,tdone=false;
+try{tdone=sessionStorage.getItem('laserMaze.tele')==='1'}catch(e){}
+const TSVG='<svg viewBox="0 0 170 110" role="img" aria-label="천체망원경 그림"><line x1="85" y1="62" x2="52" y2="104" stroke="#3b4d6d" stroke-width="5"/><line x1="85" y1="62" x2="118" y2="104" stroke="#3b4d6d" stroke-width="5"/><line x1="85" y1="62" x2="85" y2="104" stroke="#3b4d6d" stroke-width="5"/><g transform="rotate(-28 85 56)"><rect x="40" y="44" width="92" height="22" rx="4" fill="#7c5cff"/><rect x="124" y="40" width="14" height="30" rx="3" fill="#a897ff"/><rect x="26" y="50" width="16" height="10" rx="2" fill="#9db0d3"/><rect x="62" y="34" width="22" height="8" rx="2" fill="#3b4d6d"/></g><circle cx="146" cy="16" r="2" fill="#fff"/><circle cx="20" cy="22" r="1.5" fill="#fff"/><circle cx="120" cy="8" r="1.5" fill="#9db0d3"/></svg>';
+function teleDigits(){let h='<div class="tdg'+(tbad?' bad':'')+'" id="tDg">';for(let i=0;i<4;i++)h+='<b'+(i===tv.length&&!tbad?' class="cur"':'')+'>'+(tv[i]||'')+'</b>';return h+'</div>'}
+function mkStars(){
+  const el=$('stars');if(el.childElementCount)return;
+  let h='';const cols=['#fff','#fff','#fff','#cfe0ff','#ffe9b8','#ffd0d0'];
+  for(let i=0;i<300;i++){
+    const sz=Math.random()<.65?1.3+Math.random()*.9:2.4+Math.random()*1.8,c=cols[(Math.random()*cols.length)|0];
+    const tw=Math.random()<.45?';animation:twk '+(2+Math.random()*4).toFixed(1)+'s ease-in-out '+(Math.random()*4).toFixed(1)+'s infinite':'';
+    const gl=sz>2.4?';box-shadow:0 0 '+(sz*2).toFixed(1)+'px '+c:'';
+    h+='<i style="left:'+(Math.random()*100).toFixed(1)+'%;top:'+(Math.random()*100).toFixed(1)+'%;width:'+sz.toFixed(1)+'px;height:'+sz.toFixed(1)+'px;background:'+c+';opacity:'+(.45+Math.random()*.55).toFixed(2)+gl+tw+'"></i>';
+  }
+  el.innerHTML=h;
+}
+function teleDraw(){
+  mkStars();$('tSvg').innerHTML=TSVG;
+  if(tdone){
+    $('tInfo').innerHTML='<div style="font-size:44px;line-height:1">🎉</div><div class="ttl">미션 성공!</div><div class="tbig">'+TCODE+'</div><div class="tsub">다른 모둠에게는 비밀이에요</div>';
+    $('tPad').hidden=true;$('tMsg').hidden=true;
+    if(!$('tAgain')){const b=document.createElement('button');b.id='tAgain';b.className='btn again';b.textContent='다시 해 보기';b.onclick=()=>{tdone=false;tv='';tbad=false;try{sessionStorage.removeItem('laserMaze.tele')}catch(e){}teleDraw()};$('tCard').appendChild(b)}
+    $('tAgain').hidden=false;return;
+  }
+  $('tPad').hidden=false;$('tMsg').hidden=false;if($('tAgain'))$('tAgain').hidden=true;
+  $('tInfo').innerHTML='<div class="ttl">망원경으로 숫자를 관측하세요</div><div class="tsub">4자리 암호를 입력하세요</div>'+teleDigits();
+  $('tMsg').textContent='';
+}
+function teleUpd(){const o=$('tDg');if(o)o.outerHTML=teleDigits();$('tMsg').textContent=''}
+$('tPad').addEventListener('click',e=>{
+  const b=e.target.closest('.key');if(!b)return;
+  if(b.id==='tCx'){tv='';tbad=false;teleUpd();return}
+  if(b.id==='tGo'){
+    if(tv.length<4){tbad=true;teleUpd();$('tMsg').textContent='4자리를 모두 입력해 주세요.';return}
+    if(tv===TCODE){tdone=true;try{sessionStorage.setItem('laserMaze.tele','1')}catch(e){}teleDraw();return}
+    tbad=true;teleUpd();$('tMsg').textContent='암호가 달라요. 망원경으로 다시 살펴보세요.';return;
+  }
+  if(tv.length<4){tv+=b.dataset.k;tbad=false;teleUpd()}
+});
+
+
+buildTabs();loadPuzzle(0);show('home');
 })();
 </script>
 </body>
