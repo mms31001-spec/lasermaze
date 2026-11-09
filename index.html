@@ -16,6 +16,7 @@ h1 small{font-weight:500;color:var(--mut);font-size:13px;margin-left:6px}
 .tabs{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-left:auto;justify-content:flex-end}
 .tabs .grp{display:flex;flex-wrap:wrap;align-items:center;gap:5px;padding-left:10px;margin-left:4px;border-left:2px solid var(--card2)}
 .tabs .grp b{font-size:12px;color:var(--mut);margin-right:2px}
+.tab.mini.lock{opacity:.4}
 .tab.mini{padding:8px 0;width:34px;text-align:center;font-size:13px}
 .tab.mini.done::after{content:"";}
 .tab.mini.done{box-shadow:inset 0 -3px 0 #7dffb0}
@@ -112,10 +113,23 @@ h1 small{font-weight:500;color:var(--mut);font-size:13px;margin-left:6px}
   .codebox .btn{padding:9px 12px;font-size:14px}
   .cmsg{font-size:11px;min-height:0;margin:4px 2px 0;line-height:1.3}
   .secret{font-size:11px;margin:4px 0 0}
+  .key{font-size:20px;min-height:0}.key.go{font-size:15px}.key.cancel{font-size:14px}
+  #upper{min-height:0}
   #toast{bottom:calc(120px + env(safe-area-inset-bottom))}
 }
 @media (max-width:400px){.tab.mini{width:25px}.tabs,.tabs .grp{gap:3px}}
-@media (max-width:859px) and (max-height:620px){.msg{display:none}.cmsg{display:none}}
+@media (max-width:859px) and (max-height:620px){.msg{display:none}.cmsg:not(.bad){display:none}}
+
+#upper{position:relative;min-height:104px}
+.pad{position:absolute;inset:0;display:none;grid-template-columns:repeat(5,1fr) 1.35fr;grid-template-rows:1fr 1fr;gap:6px;background:var(--card);z-index:3}
+.pad.on{display:grid}
+.key{border:0;border-radius:10px;background:var(--card2);color:var(--ink);font:800 22px/1 ui-monospace,Menlo,Consolas,monospace;cursor:pointer;box-shadow:0 2px 0 rgba(0,0,0,.35);min-height:40px;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.key:active{transform:translateY(2px);box-shadow:none;background:#2f4570}
+.key.go{grid-column:6;grid-row:1;background:var(--acc);color:#fff;font:800 17px/1.1 inherit}
+.key.cancel{grid-column:6;grid-row:2;background:#3b4d6d;color:#fff;font:800 15px/1.1 inherit}
+#codeIn{cursor:pointer;caret-color:transparent}
+#codeBox.open #codeIn{border-color:var(--acc)}
+#codeLab{cursor:pointer}
 </style>
 </head>
 <body>
@@ -131,6 +145,7 @@ h1 small{font-weight:500;color:var(--mut);font-size:13px;margin-left:6px}
   </section>
 
   <section class="ctrl card">
+    <div id="upper">
     <p class="goal" id="goal"></p>
     <div class="btns">
       <button class="btn" id="fire">🔦 레이저 발사</button>
@@ -138,7 +153,14 @@ h1 small{font-weight:500;color:var(--mut);font-size:13px;margin-left:6px}
     </div>
     <div class="chips" id="chips"></div>
     <div class="msg" id="msg"></div>
-    <div class="codebox"><label for="codeIn">🔐 암호</label><input id="codeIn" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" placeholder="0000"><button class="btn sub" id="codeBtn">확인</button></div>
+    <div class="pad" id="pad">
+      <button class="key" data-k="1">1</button><button class="key" data-k="2">2</button><button class="key" data-k="3">3</button><button class="key" data-k="4">4</button><button class="key" data-k="5">5</button>
+      <button class="key go" id="padGo">입력</button>
+      <button class="key cancel" id="padCancel">취소</button>
+      <button class="key" data-k="6">6</button><button class="key" data-k="7">7</button><button class="key" data-k="8">8</button><button class="key" data-k="9">9</button><button class="key" data-k="0">0</button>
+    </div>
+    </div>
+    <div class="codebox" id="codeBox"><label id="codeLab">🔐 암호</label><input id="codeIn" readonly inputmode="none" tabindex="-1" maxlength="4" autocomplete="off" placeholder="0000"><button class="btn sub" id="codeDel" aria-label="지우기">⌫</button></div>
     <div class="cmsg" id="cmsg">토큰이 놓인 칸 번호를 모두 더해 4자리로 입력해요 (예: 7 → 0007)</div>
     <p class="secret" id="secret" hidden>🤫 암호는 다른 모둠에게 절대 알려주지 않기!</p>
   </section>
@@ -944,7 +966,7 @@ const CMSG0='토큰이 놓인 칸 번호를 모두 더해 4자리로 입력해�
 function cmsg(s,bad){const m=$('cmsg');m.textContent=s;m.className='cmsg'+(bad?' bad':'')}
 
 function buildTabs(){
-  const tab=(p,i,mini)=>`<button class="tab${mini?' mini':''}${solved[p.id]?' done':''}${i===pIdx?' on':''}${unlocked(i)?'':' lock'}" data-i="${i}" title="${p.name}">${unlocked(i)?'':'🔒'+(mini?'':' ')}${mini?(i-PUZZLES.findIndex(q=>q.extra)+1):p.name}</button>`;
+  const tab=(p,i,mini)=>`<button class="tab${mini?' mini':''}${solved[p.id]?' done':''}${i===pIdx?' on':''}${unlocked(i)?'':' lock'}" data-i="${i}" title="${p.name}">${unlocked(i)||mini?'':'🔒 '}${mini?(i-PUZZLES.findIndex(q=>q.extra)+1):p.name}</button>`;
   const main=PUZZLES.map((p,i)=>p.extra?'':tab(p,i,false)).join('');
   const ext=PUZZLES.map((p,i)=>p.extra?tab(p,i,true):'').join('');
   $('tabs').innerHTML=main+(ext?`<span class="grp"><b>추가 문제</b>${ext}</span>`:'');
@@ -957,7 +979,7 @@ $('tabs').addEventListener('click',e=>{
 
 function loadPuzzle(i){
   pIdx=i;toks=makeTokens(P());fired=false;selected=null;
-  $('winOv').classList.remove('on');$('codeIn').value='';cmsg(CMSG0);
+  $('winOv').classList.remove('on');$('codeIn').value='';padOpen(false);cmsg(CMSG0);
   buildTabs();
   const p=P();
   $('goal').innerHTML=`🎯 레이저가 <span>타겟 ${p.targets}개</span>에 닿게 만드세요`;
@@ -1002,7 +1024,7 @@ function submitCode(){
   if(v.length<4){bad('4자리를 모두 입력해 주세요.');return}
   if(!fired||!ev||!ev.ok){bad(!fired?'먼저 🔦 레이저를 발사해서 미션을 완성해 보세요.':'아직 미션이 완성되지 않았어요. 레이저가 모든 토큰을 지나 타겟에 닿아야 해요.');return}
   if(v!==ev.code){bad('암호가 맞지 않아요. 토큰이 놓인 칸 번호를 모두 더해 보세요.');return}
-  cmsg('');$('codeIn').blur();
+  cmsg('');padOpen(false);
   $('winCode').textContent=ev.code;
   $('winSum').textContent=toks.map(t=>t.cell).sort((a,b)=>a-b).join(' + ')+' = '+(+ev.code);
   $('winWarn').hidden=!p.secret;
@@ -1011,10 +1033,19 @@ function submitCode(){
   solved[p.id]=1;try{sessionStorage.setItem('laserMaze.solved',JSON.stringify(solved))}catch(e){}
   buildTabs();
 }
-$('codeIn').addEventListener('input',e=>{
-  const i=e.target;i.value=i.value.replace(/\D/g,'').slice(0,4);i.classList.remove('bad');
+/* 화면 숫자 패드 (기기 키보드는 쓰지 않음) */
+function padOpen(on){$('pad').classList.toggle('on',on);$('codeBox').classList.toggle('open',on)}
+const togglePad=()=>padOpen(!$('pad').classList.contains('on'));
+$('codeIn').addEventListener('click',togglePad);
+$('codeLab').addEventListener('click',togglePad);
+$('pad').addEventListener('click',e=>{
+  const b=e.target.closest('.key');if(!b||b.id==='padGo'||b.id==='padCancel')return;
+  const i=$('codeIn');if(i.value.length<4)i.value+=b.dataset.k;i.classList.remove('bad');
 });
-$('codeBtn').addEventListener('click',submitCode);
+$('codeDel').addEventListener('click',()=>{const i=$('codeIn');i.value=i.value.slice(0,-1);i.classList.remove('bad')});
+$('padGo').addEventListener('click',submitCode);
+$('padCancel').addEventListener('click',()=>{const i=$('codeIn');i.value='';i.classList.remove('bad');cmsg(CMSG0);padOpen(false)});
+$('wrap3d').addEventListener('pointerdown',()=>padOpen(false));
 
 /* ---------- 버튼 ---------- */
 $('fire').addEventListener('click',()=>{
